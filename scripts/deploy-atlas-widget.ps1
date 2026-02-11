@@ -79,24 +79,32 @@ try {
 
     # ── 5. Launch the widget for the current logged-in user ──
     # NinjaOne runs scripts as SYSTEM, so we need to start the widget
-    # in the logged-in user's session for them to see the tray icon.
+    # in the logged-in user's desktop session for the tray icon to appear.
     $loggedInUser = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
     if ($loggedInUser) {
         Write-Log "Logged-in user detected: $loggedInUser"
         $exePath = "$InstallDir\ATLAS Support.exe"
 
-        # Method: Create a scheduled task that runs immediately as the logged-in user
-        $taskName = "ATLAS-Widget-Launch"
-        $action = New-ScheduledTaskAction -Execute $exePath
-        # Extract just the username (DOMAIN\user -> user)
-        $userOnly = $loggedInUser
-        $principal = New-ScheduledTaskPrincipal -UserId $loggedInUser -LogonType Interactive -RunLevel Limited
-        $task = New-ScheduledTask -Action $action -Principal $principal
-        Register-ScheduledTask -TaskName $taskName -InputObject $task -Force | Out-Null
-        Start-ScheduledTask -TaskName $taskName
-        Start-Sleep -Seconds 3
-        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
-        Write-Log "Widget launched for user $loggedInUser via scheduled task."
+        # Method 1: Use explorer.exe session to get the correct session ID,
+        # then create a scheduled task bound to that session
+        $explorerProc = Get-Process -Name explorer -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($explorerProc) {
+            $sessionId = $explorerProc.SessionId
+            Write-Log "User desktop session ID: $sessionId"
+
+            # Use schtasks.exe directly — more reliable for interactive launch
+            $taskName = "ATLAS-Widget-Launch"
+            $exePathEscaped = "`"$exePath`""
+            
+            # Create task, run it, delete it
+            schtasks /Create /TN $taskName /TR $exePathEscaped /SC ONCE /ST 00:00 /RU $loggedInUser /IT /F 2>&1 | Out-Null
+            schtasks /Run /TN $taskName 2>&1 | Out-Null
+            Start-Sleep -Seconds 5
+            schtasks /Delete /TN $taskName /F 2>&1 | Out-Null
+            Write-Log "Widget launched for user $loggedInUser via schtasks (session $sessionId)."
+        } else {
+            Write-Log "No explorer.exe found — user may not have a desktop session."
+        }
     } else {
         Write-Log "No logged-in user detected. Widget will start on next login."
     }
@@ -115,7 +123,7 @@ try {
         Write-Log "Startup shortcut created at $shortcutPath"
     }
 
-    # ── 6. Clean up ──
+    # ── 7. Clean up ──
     Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
     Write-Log "=== ATLAS Widget Deployment Complete ==="
     Write-Output "SUCCESS: ATLAS Widget $WidgetVersion installed."

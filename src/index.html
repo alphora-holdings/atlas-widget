@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATLAS Support</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- ── Title Bar ── -->
+    <header class="titlebar" id="titlebar">
+      <div class="titlebar-logo">
+        <div class="logo-icon">A</div>
+        <span class="logo-text">ATLAS Support</span>
+      </div>
+      <button class="titlebar-close" id="btn-close" title="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- ── Main View (Form) ── -->
+    <main class="main-content" id="view-form">
+      <!-- Welcome -->
+      <div class="welcome-section">
+        <h1 class="welcome-heading">
+          <span class="wave">👋</span> Need help?
+        </h1>
+        <p class="welcome-sub">Submit a ticket and we'll get right on it.</p>
+      </div>
+
+      <!-- Ticket Form -->
+      <form id="ticket-form" class="ticket-form" novalidate>
+        <!-- Name -->
+        <div class="form-group">
+          <label for="field-name" class="form-label">Your Name</label>
+          <input type="text" id="field-name" class="form-input" placeholder="John Doe" required />
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="field-email" class="form-label">Your Email</label>
+          <input type="email" id="field-email" class="form-input" placeholder="john@company.com" required />
+        </div>
+
+        <!-- Category -->
+        <div class="form-group">
+          <label for="field-category" class="form-label">Issue Category</label>
+          <select id="field-category" class="form-input form-select" required>
+            <option value="" disabled selected>Select a category…</option>
+            <option value="Login & Access">🔐  Login & Access</option>
+            <option value="Email">📧  Email</option>
+            <option value="Printing">🖨️  Printing</option>
+            <option value="Network & Internet">🌐  Network & Internet</option>
+            <option value="Software">💻  Software</option>
+            <option value="Hardware">🖥️  Hardware</option>
+            <option value="Other">❓  Other</option>
+          </select>
+        </div>
+
+        <!-- Sub-category (dynamic) -->
+        <div class="form-group" id="subcategory-group" style="display:none;">
+          <label for="field-subcategory" class="form-label">Specific Issue</label>
+          <select id="field-subcategory" class="form-input form-select">
+            <option value="" disabled selected>Select…</option>
+          </select>
+        </div>
+
+        <!-- Summary -->
+        <div class="form-group">
+          <label for="field-summary" class="form-label">Issue Summary</label>
+          <input type="text" id="field-summary" class="form-input" placeholder="Brief description of your issue" required maxlength="200" />
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="field-description" class="form-label">Details</label>
+          <textarea id="field-description" class="form-input form-textarea" placeholder="Please describe what's happening, when it started, and what you've tried…" required rows="4"></textarea>
+        </div>
+
+        <!-- Urgency -->
+        <div class="form-group">
+          <label class="form-label">Urgency</label>
+          <div class="urgency-grid">
+            <label class="urgency-option">
+              <input type="radio" name="urgency" value="low" />
+              <span class="urgency-card">
+                <span class="urgency-dot dot-low"></span>
+                Low
+              </span>
+            </label>
+            <label class="urgency-option">
+              <input type="radio" name="urgency" value="normal" checked />
+              <span class="urgency-card">
+                <span class="urgency-dot dot-normal"></span>
+                Normal
+              </span>
+            </label>
+            <label class="urgency-option">
+              <input type="radio" name="urgency" value="high" />
+              <span class="urgency-card">
+                <span class="urgency-dot dot-high"></span>
+                High
+              </span>
+            </label>
+            <label class="urgency-option">
+              <input type="radio" name="urgency" value="critical" />
+              <span class="urgency-card">
+                <span class="urgency-dot dot-critical"></span>
+                Critical
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Device Info (read-only) -->
+        <div class="device-info-section" id="device-info">
+          <button type="button" class="device-toggle" id="device-toggle">
+            <span>📱 Device Information</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="device-details" id="device-details" style="display:none;">
+            <div class="device-row">
+              <span class="device-label">Computer</span>
+              <span class="device-value" id="ctx-computer">—</span>
+            </div>
+            <div class="device-row">
+              <span class="device-label">User</span>
+              <span class="device-value" id="ctx-user">—</span>
+            </div>
+            <div class="device-row">
+              <span class="device-label">OS</span>
+              <span class="device-value" id="ctx-os">—</span>
+            </div>
+            <div class="device-row">
+              <span class="device-label">IP Address</span>
+              <span class="device-value" id="ctx-ip">—</span>
+            </div>
+            <div class="device-row">
+              <span class="device-label">Ninja ID</span>
+              <span class="device-value" id="ctx-ninja">—</span>
+            </div>
+            <div class="device-row">
+              <span class="device-label">TeamViewer</span>
+              <span class="device-value" id="ctx-tv">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="btn-submit">
+          <span class="btn-text">Send Ticket</span>
+          <span class="btn-loader" style="display:none;">
+            <span class="spinner"></span>
+            Sending…
+          </span>
+        </button>
+      </form>
+    </main>
+
+    <!-- ── Success View ── -->
+    <main class="main-content success-view" id="view-success" style="display:none;">
+      <div class="success-content">
+        <div class="success-icon">✅</div>
+        <h2 class="success-heading">Ticket Submitted!</h2>
+        <p class="success-sub">We've received your request and will get back to you shortly.</p>
+        <div class="success-ref" id="success-ref"></div>
+        <button class="btn-submit" id="btn-new-ticket">Submit Another Ticket</button>
+      </div>
+    </main>
+
+    <!-- ── Error Toast ── -->
+    <div class="toast toast-error" id="toast-error" style="display:none;">
+      <span class="toast-icon">⚠️</span>
+      <span class="toast-message" id="toast-message">Something went wrong</span>
+    </div>
+
+    <!-- ── Status Bar ── -->
+    <footer class="statusbar">
+      <div class="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-text" id="status-text">Checking…</span>
+      </div>
+      <span class="status-device" id="status-device">—</span>
+    </footer>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

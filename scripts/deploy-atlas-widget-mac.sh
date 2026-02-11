@@ -13,7 +13,7 @@
 # ═══════════════════════════════════════════════════════════
 
 # ─── CONFIG ─── Update these values before deploying ───
-INSTALLER_URL="${ATLAS_INSTALLER_URL:-https://github.com/alphora-holdings/atlas-widget/releases/download/v1.0.0/ATLAS-Support-1.0.0-arm64.dmg}"
+INSTALLER_URL="${ATLAS_INSTALLER_URL:-https://github.com/alphora-holdings/atlas-widget/releases/download/v1.0.0/ATLAS.Support-1.0.0-arm64.dmg}"
 WIDGET_VERSION="1.0.0"
 APP_NAME="ATLAS Support"
 INSTALL_DIR="/Applications"

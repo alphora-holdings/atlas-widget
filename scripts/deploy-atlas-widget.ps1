@@ -15,7 +15,7 @@
 $InstallerUrl   = $env:ATLAS_INSTALLER_URL
 if (-not $InstallerUrl) {
     # GitHub Releases URL (update org/repo if different)
-    $InstallerUrl = "https://github.com/alphora-holdings/atlas-widget/releases/download/v1.0.0/ATLAS-Support-Setup-1.0.0.exe"
+    $InstallerUrl = "https://github.com/alphora-holdings/atlas-widget/releases/download/v1.0.0/ATLAS.Support.Setup.1.0.0.exe"
 }
 $WidgetVersion  = "1.0.0"
 $InstallDir     = "$env:ProgramFiles\ATLAS Support"

@@ -78,9 +78,42 @@ try {
     }
 
     # ── 5. Launch the widget for the current logged-in user ──
-    # The NSIS installer with runAfterFinish=true should handle this,
-    # but if not, we can start it for the logged-in user
-    Write-Log "Widget should auto-start. If not, it will start on next login."
+    # NinjaOne runs scripts as SYSTEM, so we need to start the widget
+    # in the logged-in user's session for them to see the tray icon.
+    $loggedInUser = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
+    if ($loggedInUser) {
+        Write-Log "Logged-in user detected: $loggedInUser"
+        $exePath = "$InstallDir\ATLAS Support.exe"
+
+        # Method: Create a scheduled task that runs immediately as the logged-in user
+        $taskName = "ATLAS-Widget-Launch"
+        $action = New-ScheduledTaskAction -Execute $exePath
+        # Extract just the username (DOMAIN\user -> user)
+        $userOnly = $loggedInUser
+        $principal = New-ScheduledTaskPrincipal -UserId $loggedInUser -LogonType Interactive -RunLevel Limited
+        $task = New-ScheduledTask -Action $action -Principal $principal
+        Register-ScheduledTask -TaskName $taskName -InputObject $task -Force | Out-Null
+        Start-ScheduledTask -TaskName $taskName
+        Start-Sleep -Seconds 3
+        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
+        Write-Log "Widget launched for user $loggedInUser via scheduled task."
+    } else {
+        Write-Log "No logged-in user detected. Widget will start on next login."
+    }
+
+    # ── 6. Ensure auto-start on login ──
+    # Create a shortcut in the All Users Startup folder
+    $startupDir = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
+    $shortcutPath = "$startupDir\ATLAS Support.lnk"
+    if (-not (Test-Path $shortcutPath)) {
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($shortcutPath)
+        $shortcut.TargetPath = "$InstallDir\ATLAS Support.exe"
+        $shortcut.WorkingDirectory = $InstallDir
+        $shortcut.Description = "ATLAS Support Widget"
+        $shortcut.Save()
+        Write-Log "Startup shortcut created at $shortcutPath"
+    }
 
     # ── 6. Clean up ──
     Remove-Item $installerPath -Force -ErrorAction SilentlyContinue

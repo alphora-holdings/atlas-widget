@@ -24,6 +24,24 @@
       </button>
     </header>
 
+    <!-- ── Tab Navigation ── -->
+    <nav class="tab-bar" id="tab-bar">
+      <button class="tab-btn active" data-tab="support">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Support
+      </button>
+      <button class="tab-btn" data-tab="device">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        Device Info
+      </button>
+    </nav>
+
     <!-- ── Main View (Form) ── -->
     <main class="main-content" id="view-form">
       <!-- Welcome -->
@@ -173,6 +191,137 @@
         <p class="success-sub">We've received your request and will get back to you shortly.</p>
         <div class="success-ref" id="success-ref"></div>
         <button class="btn-submit" id="btn-new-ticket">Submit Another Ticket</button>
+      </div>
+    </main>
+
+    <!-- ── Device Info View ── -->
+    <main class="main-content" id="view-device" style="display:none;">
+      <!-- Identity Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          Identity
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Computer Name</span>
+            <span class="info-value" id="di-computer">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Logged-in User</span>
+            <span class="info-value" id="di-user">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Domain</span>
+            <span class="info-value" id="di-domain">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Serial Number</span>
+            <span class="info-value" id="di-serial">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Manufacturer</span>
+            <span class="info-value" id="di-manufacturer">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Model</span>
+            <span class="info-value" id="di-model">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          System
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Operating System</span>
+            <span class="info-value" id="di-os">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Platform</span>
+            <span class="info-value" id="di-platform">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Architecture</span>
+            <span class="info-value" id="di-arch">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">CPU</span>
+            <span class="info-value" id="di-cpu">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">RAM (Total / Free)</span>
+            <span class="info-value" id="di-ram">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Disk (Total / Free)</span>
+            <span class="info-value" id="di-disk">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Uptime</span>
+            <span class="info-value" id="di-uptime">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <line x1="12" y1="20" x2="12.01" y2="20"/>
+          </svg>
+          Network
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">IP Address</span>
+            <span class="info-value" id="di-ip">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">MAC Address</span>
+            <span class="info-value" id="di-mac">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remote Support Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Remote Support
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">NinjaOne Device ID</span>
+            <span class="info-value" id="di-ninja">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">TeamViewer ID</span>
+            <span class="info-value" id="di-tvid">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">TeamViewer Version</span>
+            <span class="info-value" id="di-tvver">—</span>
+          </div>
+        </div>
       </div>
     </main>
 

@@ -29,7 +29,18 @@ interface DeviceContext {
     osVersion: string;
     osPlatform: string;
     ipAddress: string;
+    macAddress: string | null;
     domain: string | null;
+    cpu: string;
+    arch: string;
+    totalMemoryGB: string;
+    freeMemoryGB: string;
+    diskTotal: string | null;
+    diskFree: string | null;
+    serialNumber: string | null;
+    manufacturer: string | null;
+    model: string | null;
+    uptimeFormatted: string;
     ninjaDeviceId: number | null;
     teamviewerId: string | null;
     teamviewerVersion: string | null;
@@ -83,6 +94,10 @@ const statusDot = $<HTMLElement>('status-dot');
 const statusText = $<HTMLElement>('status-text');
 const statusDevice = $<HTMLElement>('status-device');
 
+// Tab elements
+const tabBar = $<HTMLElement>('tab-bar');
+const viewDevice = $<HTMLElement>('view-device');
+
 // State
 let deviceContext: DeviceContext | null = null;
 
@@ -93,6 +108,7 @@ async function init() {
     try {
         deviceContext = await window.atlasAPI.getDeviceContext();
         populateDeviceInfo(deviceContext);
+        populateDeviceTab(deviceContext);
         prefillUserFields(deviceContext);
         updateStatus('connected', 'Connected', deviceContext.computerName);
     } catch (err) {
@@ -113,6 +129,39 @@ function populateDeviceInfo(ctx: DeviceContext) {
         ? String(ctx.ninjaDeviceId)
         : 'Not found';
     $('ctx-tv').textContent = ctx.teamviewerId || 'Not installed';
+}
+
+function populateDeviceTab(ctx: DeviceContext) {
+    // Identity
+    $('di-computer').textContent = ctx.computerName;
+    $('di-user').textContent = ctx.loggedInUser;
+    $('di-domain').textContent = ctx.domain || 'N/A';
+    $('di-serial').textContent = ctx.serialNumber || 'Unknown';
+    $('di-manufacturer').textContent = ctx.manufacturer || 'Unknown';
+    $('di-model').textContent = ctx.model || 'Unknown';
+
+    // System
+    $('di-os').textContent = ctx.osVersion;
+    $('di-platform').textContent = ctx.osPlatform;
+    $('di-arch').textContent = ctx.arch;
+    $('di-cpu').textContent = ctx.cpu;
+    $('di-ram').textContent = `${ctx.totalMemoryGB} GB / ${ctx.freeMemoryGB} GB free`;
+    $('di-disk').textContent =
+        ctx.diskTotal && ctx.diskFree
+            ? `${ctx.diskTotal} / ${ctx.diskFree} free`
+            : 'Unknown';
+    $('di-uptime').textContent = ctx.uptimeFormatted;
+
+    // Network
+    $('di-ip').textContent = ctx.ipAddress;
+    $('di-mac').textContent = ctx.macAddress || 'Unknown';
+
+    // Remote Support
+    $('di-ninja').textContent = ctx.ninjaDeviceId
+        ? String(ctx.ninjaDeviceId)
+        : 'Not found';
+    $('di-tvid').textContent = ctx.teamviewerId || 'Not installed';
+    $('di-tvver').textContent = ctx.teamviewerVersion || 'N/A';
 }
 
 function prefillUserFields(ctx: DeviceContext) {
@@ -172,6 +221,28 @@ deviceToggle.addEventListener('click', () => {
     deviceToggle.classList.toggle('open', !isOpen);
 });
 
+// Tab switching
+tabBar.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.tab-btn') as HTMLElement | null;
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+
+    // Update active tab button
+    tabBar.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Show/hide views
+    if (tab === 'support') {
+        viewForm.style.display = 'block';
+        viewDevice.style.display = 'none';
+        viewSuccess.style.display = 'none';
+    } else if (tab === 'device') {
+        viewForm.style.display = 'none';
+        viewDevice.style.display = 'block';
+        viewSuccess.style.display = 'none';
+    }
+});
+
 // Category → Sub-category
 categorySelect.addEventListener('change', () => {
     const category = categorySelect.value;
@@ -193,6 +264,10 @@ btnNewTicket.addEventListener('click', () => {
     resetForm();
     viewSuccess.style.display = 'none';
     viewForm.style.display = 'block';
+    viewDevice.style.display = 'none';
+    // Reset tab to Support
+    tabBar.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    tabBar.querySelector('[data-tab="support"]')?.classList.add('active');
 });
 
 // ── Form Submission ────────────────────────────────────────

@@ -278,44 +278,57 @@ git push origin vX.X.X
 
 ## Rollback
 
-If you release a broken version, you can roll back to the previous one.
+If you release a broken version, you can roll back to **any** previous version.
 
 ### How It Works
 
-Every time `release.sh` runs, it copies the current `latest.json` → `previous.json` on S3
-**before** overwriting `latest.json`. So S3 always has two files:
+Every release uploads two things to S3:
 
-| File | Contains |
+| File | Purpose |
 |---|---|
-| `latest.json` | The newest release (what devices install by default) |
-| `previous.json` | The last known-good release before the current one |
+| `latest.json` | Points to the newest version (what devices install by default) |
+| `versions/vX.X.X.json` | Permanent record of every release (never overwritten) |
 
-### Option 1: Roll back from your dev machine
+Even if you release multiple buggy versions in a row, every past version is
+still available in `versions/`:
 
-```bash
-./scripts/rollback.sh           # Swap previous.json → latest.json
-./scripts/rollback.sh --check   # Just show current vs previous versions
+```
+s3://alphora-atlas-widget-releases/
+├── latest.json              ← v1.2.0 (current)
+├── versions/
+│   ├── v1.0.0.json          ← permanent, always available
+│   ├── v1.1.0.json          ← even if buggy, still here
+│   └── v1.2.0.json          ← current
+├── v1.0.0/                  ← installers
+├── v1.1.0/
+└── v1.2.0/
 ```
 
-This copies `previous.json` back to `latest.json` on S3. The next deployment
-on any device will install the previous version.
+### Option 1: Roll back from your dev machine (any version)
+
+```bash
+./scripts/rollback.sh              # Interactive: lists all versions, pick one
+./scripts/rollback.sh v1.0.0       # Roll back to a specific version directly
+./scripts/rollback.sh --list       # Just list available versions
+```
+
+This overwrites `latest.json` on S3 with the chosen version. All future
+NinjaOne deployments will use that version.
 
 ### Option 2: Roll back a single device via NinjaOne
 
 In NinjaOne, when running the deploy script on a device, set the script variable:
 
 ```
-ATLAS_DEPLOY_MODE=rollback
+ATLAS_DEPLOY_MODE=v1.0.0          # Use a specific version
 ```
 
-This tells the deploy script to read `previous.json` instead of `latest.json`
-for that specific run only. Useful when you want to roll back one device
-without affecting the global `latest.json`.
+This only affects that specific run — it doesn't change `latest.json` globally.
 
 ### After Rolling Back
 
 To re-deploy the rolled-back version on devices that already have the broken version,
-just run the deploy script again via NinjaOne — it will now pick up the previous version.
+just run the deploy script again via NinjaOne — it will now pick up the rolled-back version.
 
 ## Architecture Notes
 

@@ -105,18 +105,9 @@ fi
 S3_WIN_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${S3_WIN_KEY}"
 S3_MAC_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${S3_MAC_KEY}"
 
-# ── 4. Upload latest.json (deploy scripts read this automatically) ──
+# ── 4. Upload latest.json + versioned copy ──
 echo ""
 echo "📝 Updating latest.json..."
-
-# Back up current latest.json → previous.json (for rollback)
-echo "   Backing up current latest.json → previous.json..."
-$AWS_CMD s3 cp "s3://${S3_BUCKET}/latest.json" "s3://${S3_BUCKET}/previous.json" \
-    --region "$S3_REGION" \
-    --content-type "application/json" \
-    --cache-control "no-cache, no-store, must-revalidate" 2>/dev/null \
-    && echo "   ✅ previous.json saved (rollback available)" \
-    || echo "   ⚠️  No existing latest.json to back up (first release?)"
 
 MAC_URL_JSON=""
 if [[ -n "$MAC_INSTALLER" ]]; then
@@ -132,14 +123,21 @@ cat > /tmp/atlas-latest.json << EOJSON
 }
 EOJSON
 
+# Upload as latest.json (what deploy scripts read by default)
 $AWS_CMD s3 cp /tmp/atlas-latest.json "s3://${S3_BUCKET}/latest.json" \
     --region "$S3_REGION" \
     --content-type "application/json" \
     --cache-control "no-cache, no-store, must-revalidate"
+
+# Save a versioned copy: versions/v1.2.0.json (permanent, never overwritten)
+$AWS_CMD s3 cp /tmp/atlas-latest.json "s3://${S3_BUCKET}/versions/v${NEW_VERSION}.json" \
+    --region "$S3_REGION" \
+    --content-type "application/json"
+
 rm -f /tmp/atlas-latest.json
 
-echo "   ✅ latest.json → s3://${S3_BUCKET}/latest.json"
-echo "   Deploy scripts will now automatically use v${NEW_VERSION}"
+echo "   ✅ latest.json → v${NEW_VERSION}"
+echo "   ✅ versions/v${NEW_VERSION}.json saved (rollback available)"
 
 # ── 5. Git commit, tag, push ──
 echo ""

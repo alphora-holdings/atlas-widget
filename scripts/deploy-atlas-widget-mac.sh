@@ -16,12 +16,17 @@ S3_REGION="eu-west-1"
 APP_NAME="ATLAS Support"
 INSTALL_DIR="/Applications"
 
-# Deploy mode: "latest" (default) or "rollback" (use previous version)
-# Set ATLAS_DEPLOY_MODE=rollback as a NinjaOne script variable or env var to rollback
+# Deploy mode:
+#   "latest"        → install the newest version (default)
+#   "v1.0.0"        → install a specific version (versions/v1.0.0.json)
+# Set ATLAS_DEPLOY_MODE as a NinjaOne script variable or env var
 DEPLOY_MODE="${ATLAS_DEPLOY_MODE:-latest}"
 
-if [ "$DEPLOY_MODE" = "rollback" ]; then
-    LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/previous.json"
+if echo "$DEPLOY_MODE" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+$'; then
+    # Specific version requested (e.g. "v1.0.0" or "1.0.0")
+    VER="$DEPLOY_MODE"
+    [[ "$VER" != v* ]] && VER="v${VER}"
+    LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/versions/${VER}.json"
 else
     LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/latest.json"
 fi

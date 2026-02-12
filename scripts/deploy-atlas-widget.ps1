@@ -14,12 +14,17 @@ $S3Bucket   = "alphora-atlas-widget-releases"
 $S3Region   = "eu-west-1"
 $InstallDir = "$env:ProgramFiles\ATLAS Support"
 
-# Deploy mode: "latest" (default) or "rollback" (use previous version)
-# Set ATLAS_DEPLOY_MODE=rollback as a NinjaOne script variable or env var to rollback
+# Deploy mode:
+#   "latest"        → install the newest version (default)
+#   "v1.0.0"        → install a specific version (versions/v1.0.0.json)
+# Set ATLAS_DEPLOY_MODE as a NinjaOne script variable or env var
 $DeployMode = if ($env:ATLAS_DEPLOY_MODE) { $env:ATLAS_DEPLOY_MODE } else { "latest" }
 
-if ($DeployMode -eq "rollback") {
-    $LatestUrl = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/previous.json"
+if ($DeployMode -match "^v?\d+\.\d+\.\d+$") {
+    # Specific version requested (e.g. "v1.0.0" or "1.0.0")
+    $ver = $DeployMode
+    if (-not $ver.StartsWith("v")) { $ver = "v$ver" }
+    $LatestUrl = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/versions/${ver}.json"
 } else {
     $LatestUrl = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/latest.json"
 }

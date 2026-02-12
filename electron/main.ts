@@ -136,16 +136,16 @@ ipcMain.handle('get-device-context', () => {
 
 ipcMain.handle('get-config', () => {
     return {
-        apiBaseUrl: process.env.ATLAS_API_URL || 'https://api.alphora.com/api',
+        apiBaseUrl: process.env.ATLAS_API_URL || 'http://localhost:3000/api',
     };
 });
 
 ipcMain.handle('submit-ticket', async (_event, ticketData) => {
     try {
         const config = {
-            apiBaseUrl: process.env.ATLAS_API_URL || 'https://api.alphora.com/api',
+            apiBaseUrl: process.env.ATLAS_API_URL || 'http://localhost:3000/api',
         };
-        const response = await fetch(`${config.apiBaseUrl}/tickets`, {
+        const response = await fetch(`${config.apiBaseUrl}/rmm/widget/tickets`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(ticketData),

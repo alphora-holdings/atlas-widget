@@ -155,14 +155,29 @@ if [ -n "$CURRENT_USER" ] && [ "$CURRENT_USER" != "root" ]; then
 fi
 
 # ── 9. Report to NinjaOne (if available) ──
-# NinjaOne macOS agent uses `ninjarmm-cli` for custom fields
-if command -v ninjarmm-cli &> /dev/null; then
-    ninjarmm-cli set --name "atlasWidgetInstalled" --value "true" 2>/dev/null
-    ninjarmm-cli set --name "atlasWidgetVersion" --value "$WIDGET_VERSION" 2>/dev/null
-    ninjarmm-cli set --name "atlasWidgetInstalledDate" --value "$(date '+%Y-%m-%d %H:%M:%S')" 2>/dev/null
+# NinjaOne macOS agent uses `ninjarmm-cli` for custom fields.
+# The binary is NOT on $PATH — it lives inside the agent bundle.
+NINJA_CLI=""
+NINJA_CLI_PATHS=(
+    "/Applications/NinjaRMMAgent/programdata/ninjarmm-cli"
+    "/opt/NinjaRMMAgent/programdata/ninjarmm-cli"
+    "/usr/local/bin/ninjarmm-cli"
+)
+for p in "${NINJA_CLI_PATHS[@]}"; do
+    if [ -x "$p" ]; then
+        NINJA_CLI="$p"
+        break
+    fi
+done
+
+if [ -n "$NINJA_CLI" ]; then
+    log "Found ninjarmm-cli at: $NINJA_CLI"
+    "$NINJA_CLI" set --name "atlaswidgetinstalled" --value "true" 2>/dev/null
+    "$NINJA_CLI" set --name "atlaswidgetversion" --value "$WIDGET_VERSION" 2>/dev/null
+    "$NINJA_CLI" set --name "atlaswidgetinstalleddate" --value "$(date '+%Y-%m-%d %H:%M:%S')" 2>/dev/null
     log "NinjaOne custom fields updated."
 else
-    log "Note: ninjarmm-cli not available. Custom fields skipped."
+    log "Note: ninjarmm-cli not found in known paths. Custom fields skipped."
 fi
 
 log "=== ATLAS Widget macOS Deployment Complete ==="

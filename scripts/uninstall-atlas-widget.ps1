@@ -54,9 +54,9 @@ try {
 
     # ── 6. Update NinjaOne custom fields ──
     try {
-        Ninja-Property-Set atlasWidgetInstalled "false"
-        Ninja-Property-Set atlasWidgetVersion ""
-        Ninja-Property-Set atlasWidgetInstalledDate ""
+        Ninja-Property-Set atlaswidgetinstalled "false"
+        Ninja-Property-Set atlaswidgetversion ""
+        Ninja-Property-Set atlaswidgetinstalleddate ""
         Write-Log "NinjaOne custom fields updated."
     } catch {
         Write-Log "Note: NinjaOne custom fields not available. Skipping."

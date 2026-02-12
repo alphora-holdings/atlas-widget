@@ -50,11 +50,28 @@ if [ -n "$CURRENT_USER" ] && [ "$CURRENT_USER" != "root" ]; then
 fi
 
 # ── 5. Report to NinjaOne ──
-if command -v ninjarmm-cli &> /dev/null; then
-    ninjarmm-cli set --name "atlasWidgetInstalled" --value "false" 2>/dev/null
-    ninjarmm-cli set --name "atlasWidgetVersion" --value "" 2>/dev/null
-    ninjarmm-cli set --name "atlasWidgetInstalledDate" --value "" 2>/dev/null
+# The binary is NOT on $PATH — it lives inside the agent bundle.
+NINJA_CLI=""
+NINJA_CLI_PATHS=(
+    "/Applications/NinjaRMMAgent/programdata/ninjarmm-cli"
+    "/opt/NinjaRMMAgent/programdata/ninjarmm-cli"
+    "/usr/local/bin/ninjarmm-cli"
+)
+for p in "${NINJA_CLI_PATHS[@]}"; do
+    if [ -x "$p" ]; then
+        NINJA_CLI="$p"
+        break
+    fi
+done
+
+if [ -n "$NINJA_CLI" ]; then
+    log "Found ninjarmm-cli at: $NINJA_CLI"
+    "$NINJA_CLI" set --name "atlaswidgetinstalled" --value "false" 2>/dev/null
+    "$NINJA_CLI" set --name "atlaswidgetversion" --value "" 2>/dev/null
+    "$NINJA_CLI" set --name "atlaswidgetinstalleddate" --value "" 2>/dev/null
     log "NinjaOne custom fields updated."
+else
+    log "Note: ninjarmm-cli not found in known paths. Custom fields skipped."
 fi
 
 log "=== ATLAS Widget macOS Uninstall Complete ==="

@@ -13,9 +13,18 @@
 # ─── CONFIG ───
 S3_BUCKET="alphora-atlas-widget-releases"
 S3_REGION="eu-west-1"
-LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/latest.json"
 APP_NAME="ATLAS Support"
 INSTALL_DIR="/Applications"
+
+# Deploy mode: "latest" (default) or "rollback" (use previous version)
+# Set ATLAS_DEPLOY_MODE=rollback as a NinjaOne script variable or env var to rollback
+DEPLOY_MODE="${ATLAS_DEPLOY_MODE:-latest}"
+
+if [ "$DEPLOY_MODE" = "rollback" ]; then
+    LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/previous.json"
+else
+    LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/latest.json"
+fi
 # ──────────────
 
 LOG_FILE="/tmp/atlas-widget-install.log"
@@ -25,9 +34,10 @@ log() {
 }
 
 log "=== ATLAS Widget macOS Deployment Starting ==="
+log "Deploy mode: $DEPLOY_MODE"
 
 # ── 0. Fetch latest version info from S3 ──
-log "Fetching latest version info from $LATEST_URL..."
+log "Fetching version info from $LATEST_URL..."
 LATEST_JSON=$(curl -fsSL "$LATEST_URL" 2>&1)
 if [ $? -ne 0 ]; then
     log "ERROR: Failed to fetch latest.json from S3: $LATEST_JSON"

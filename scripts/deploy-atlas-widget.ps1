@@ -12,8 +12,17 @@
 # ─── CONFIG ───
 $S3Bucket   = "alphora-atlas-widget-releases"
 $S3Region   = "eu-west-1"
-$LatestUrl  = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/latest.json"
 $InstallDir = "$env:ProgramFiles\ATLAS Support"
+
+# Deploy mode: "latest" (default) or "rollback" (use previous version)
+# Set ATLAS_DEPLOY_MODE=rollback as a NinjaOne script variable or env var to rollback
+$DeployMode = if ($env:ATLAS_DEPLOY_MODE) { $env:ATLAS_DEPLOY_MODE } else { "latest" }
+
+if ($DeployMode -eq "rollback") {
+    $LatestUrl = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/previous.json"
+} else {
+    $LatestUrl = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/latest.json"
+}
 # ──────────────
 
 $ErrorActionPreference = "Stop"
@@ -27,9 +36,10 @@ function Write-Log {
 
 try {
     Write-Log "=== ATLAS Widget Deployment Starting ==="
+    Write-Log "Deploy mode: $DeployMode"
 
     # ── 0. Fetch latest version info from S3 ──
-    Write-Log "Fetching latest version info from $LatestUrl..."
+    Write-Log "Fetching version info from $LatestUrl..."
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     try {
         $latestJson = Invoke-WebRequest -Uri $LatestUrl -UseBasicParsing | ConvertFrom-Json

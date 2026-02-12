@@ -12,7 +12,7 @@
 
 # ─── CONFIG ───
 S3_BUCKET="alphora-atlas-widget-releases"
-S3_REGION="eu-west-1"
+S3_REGION="eu-central-1"
 APP_NAME="ATLAS Support"
 INSTALL_DIR="/Applications"
 

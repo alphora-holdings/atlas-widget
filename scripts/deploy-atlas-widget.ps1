@@ -98,9 +98,9 @@ try {
 
     # ── 4. Report to NinjaOne custom fields ──
     try {
-        Ninja-Property-Set atlasWidgetInstalled "true"
-        Ninja-Property-Set atlasWidgetVersion $WidgetVersion
-        Ninja-Property-Set atlasWidgetInstalledDate (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        Ninja-Property-Set atlaswidgetinstalled "true"
+        Ninja-Property-Set atlaswidgetversion $WidgetVersion
+        Ninja-Property-Set atlaswidgetinstalleddate (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
         Write-Log "NinjaOne custom fields updated."
     } catch {
         Write-Log "Note: NinjaOne custom fields not available (running outside NinjaOne?). Skipping."

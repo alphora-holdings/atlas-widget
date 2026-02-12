@@ -107,7 +107,16 @@ S3_MAC_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${S3_MAC_KEY}"
 
 # ── 4. Upload latest.json (deploy scripts read this automatically) ──
 echo ""
-echo "📝 Uploading latest.json..."
+echo "📝 Updating latest.json..."
+
+# Back up current latest.json → previous.json (for rollback)
+echo "   Backing up current latest.json → previous.json..."
+$AWS_CMD s3 cp "s3://${S3_BUCKET}/latest.json" "s3://${S3_BUCKET}/previous.json" \
+    --region "$S3_REGION" \
+    --content-type "application/json" \
+    --cache-control "no-cache, no-store, must-revalidate" 2>/dev/null \
+    && echo "   ✅ previous.json saved (rollback available)" \
+    || echo "   ⚠️  No existing latest.json to back up (first release?)"
 
 MAC_URL_JSON=""
 if [[ -n "$MAC_INSTALLER" ]]; then

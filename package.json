@@ -8,7 +8,8 @@
     "build:electron": "tsc -p tsconfig.electron.json",
     "build:full": "tsc && vite build && tsc -p tsconfig.electron.json",
     "electron:build:win": "npm run build:full && electron-builder --win",
-    "electron:build:mac": "npm run build:full && electron-builder --mac"
+    "electron:build:mac": "npm run build:full && electron-builder --mac",
+    "release": "./scripts/release.sh"
   },
   "keywords": [
     "electron",

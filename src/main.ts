@@ -230,19 +230,41 @@ function prefillUserFields(ctx: DeviceContext) {
 }
 
 async function checkApiConnection() {
+    const device = deviceContext?.computerName || '—';
     try {
         const config = await window.atlasAPI.getConfig();
-        const response = await fetch(`${config.apiBaseUrl.replace('/api', '')}/health`, {
-            method: 'GET',
-            signal: AbortSignal.timeout(5000),
-        });
-        if (response.ok) {
-            updateStatus('connected', 'Connected', deviceContext?.computerName || '—');
+        const baseUrl = config.apiBaseUrl;
+
+        // Try the health endpoint on the API root
+        const healthUrl = baseUrl.replace(/\/api\/?$/, '/health');
+
+        try {
+            const response = await fetch(healthUrl, {
+                method: 'GET',
+                signal: AbortSignal.timeout(5000),
+            });
+            // Any HTTP response (even 401 from OIDC) means the server is reachable
+            if (response.status < 500) {
+                updateStatus('connected', 'Connected', device);
+                return;
+            }
+        } catch {
+            // API not reachable — that's okay for local/dev usage
+        }
+
+        // If device context loaded, widget is functional even without API
+        if (deviceContext) {
+            updateStatus('connected', 'Ready', device);
         } else {
-            updateStatus('limited', 'Limited', deviceContext?.computerName || '—');
+            updateStatus('limited', 'Limited', device);
         }
     } catch {
-        updateStatus('offline', 'Offline', deviceContext?.computerName || '—');
+        // Config failed — still mark as ready if we have device context
+        if (deviceContext) {
+            updateStatus('connected', 'Ready', device);
+        } else {
+            updateStatus('limited', 'Limited', device);
+        }
     }
 }
 

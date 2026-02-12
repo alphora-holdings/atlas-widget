@@ -129,6 +129,9 @@ function populateDeviceInfo(ctx: DeviceContext) {
         ? String(ctx.ninjaDeviceId)
         : 'Not found';
     $('ctx-tv').textContent = ctx.teamviewerId || 'Not installed';
+
+    // Add copy buttons to support tab device rows
+    initCopyButtons('#device-details .device-row', 'device-value', 'device-value-wrap');
 }
 
 function populateDeviceTab(ctx: DeviceContext) {
@@ -162,6 +165,55 @@ function populateDeviceTab(ctx: DeviceContext) {
         : 'Not found';
     $('di-tvid').textContent = ctx.teamviewerId || 'Not installed';
     $('di-tvver').textContent = ctx.teamviewerVersion || 'N/A';
+
+    // Add copy buttons after populating values
+    initCopyButtons('#view-device .info-item', 'info-value', 'info-value-wrap');
+}
+
+/**
+ * Inject a copy button next to every value element inside the given container rows.
+ */
+function initCopyButtons(rowSelector: string, valueClass: string, wrapClass: string) {
+    const items = document.querySelectorAll(rowSelector);
+    items.forEach((item) => {
+        const valueEl = item.querySelector(`.${valueClass}`) as HTMLElement;
+        if (!valueEl || item.querySelector('.copy-btn')) return;
+
+        // Wrap value + button together
+        const wrap = document.createElement('div');
+        wrap.className = wrapClass;
+        valueEl.parentNode!.insertBefore(wrap, valueEl);
+        wrap.appendChild(valueEl);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.title = 'Copy';
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>`;
+
+        btn.addEventListener('click', () => {
+            const text = valueEl.textContent?.trim() || '';
+            if (!text || text === '—') return;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>`;
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>`;
+                }, 1500);
+            });
+        });
+
+        wrap.appendChild(btn);
+    });
 }
 
 function prefillUserFields(ctx: DeviceContext) {

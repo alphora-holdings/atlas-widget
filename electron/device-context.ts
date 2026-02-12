@@ -245,16 +245,21 @@ function readNinjaDeviceId(): number | null {
             if (matchStr) return parseInt(matchStr[1], 10);
         } catch { /* ignore */ }
     } else if (os.platform() === 'darwin') {
-        // NinjaOne macOS agent stores config in various locations
+        // NinjaOne macOS agent stores NodeId in agent.conf
         const configPaths = [
+            '/Applications/NinjaRMMAgent/programfiles/config/agent.conf',
+            '/opt/NinjaRMMAgent/programfiles/config/agent.conf',
             '/Applications/NinjaRMMAgent/programdata/ninjarmm-macagent.conf',
-            '/opt/NinjaRMMAgent/programdata/ninjarmm-macagent.conf',
         ];
         for (const cfgPath of configPaths) {
             try {
                 const content = require('fs').readFileSync(cfgPath, 'utf-8');
-                const match = content.match(/"device_id"\s*:\s*(\d+)/);
-                if (match) return parseInt(match[1], 10);
+                // agent.conf uses INI format: NodeId=7
+                const nodeMatch = content.match(/NodeId\s*=\s*(\d+)/);
+                if (nodeMatch) return parseInt(nodeMatch[1], 10);
+                // Fallback: JSON format used in older agents
+                const jsonMatch = content.match(/"device_id"\s*:\s*(\d+)/);
+                if (jsonMatch) return parseInt(jsonMatch[1], 10);
             } catch { continue; }
         }
     }
@@ -284,8 +289,12 @@ function readTeamViewerId(): string | null {
             } catch { continue; }
         }
     } else if (os.platform() === 'darwin') {
-        // TeamViewer on macOS stores config in plist or global.conf
+        // TeamViewer on macOS stores ClientID in user or system plist
+        const homedir = os.homedir();
         const tvPaths = [
+            `${homedir}/Library/Preferences/com.teamviewer.teamviewer.preferences.Machine.plist`,
+            '/Library/Preferences/com.teamviewer.teamviewer.preferences.Machine.plist',
+            `${homedir}/Library/Preferences/com.teamviewer.teamviewer.preferences.plist`,
             '/Library/Preferences/com.teamviewer.teamviewer.preferences.plist',
             '/Library/Preferences/com.teamviewer.teamviewer10.plist',
         ];

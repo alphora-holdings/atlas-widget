@@ -3,21 +3,20 @@
 # deploy-atlas-widget-mac.sh
 # NinjaOne deployment script for ATLAS Widget (macOS)
 #
-# Upload this script to NinjaOne > Administration > Scripting > Add New Script
+# Upload this script to NinjaOne ONCE — it auto-discovers the
+# latest version from S3, so you never need to update it.
+#
 # Language: Shell (Bash)
 # Set to run as: Root
-#
-# BEFORE RUNNING:
-#   1. Create a GitHub Release at alphora-holdings/atlas-widget with the .dmg attached
-#   2. Verify the INSTALLER_URL below points to the correct release
 # ═══════════════════════════════════════════════════════════
 
-# ─── CONFIG ─── Update these values before deploying ───
-INSTALLER_URL="${ATLAS_INSTALLER_URL:-https://github.com/alphora-holdings/atlas-widget/releases/download/v1.0.0/ATLAS.Support-1.0.0-arm64.dmg}"
-WIDGET_VERSION="1.0.0"
+# ─── CONFIG ───
+S3_BUCKET="alphora-atlas-widget-releases"
+S3_REGION="eu-west-1"
+LATEST_URL="https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/latest.json"
 APP_NAME="ATLAS Support"
 INSTALL_DIR="/Applications"
-# ───────────────────────────────────────────────────────
+# ──────────────
 
 LOG_FILE="/tmp/atlas-widget-install.log"
 
@@ -26,6 +25,29 @@ log() {
 }
 
 log "=== ATLAS Widget macOS Deployment Starting ==="
+
+# ── 0. Fetch latest version info from S3 ──
+log "Fetching latest version info from $LATEST_URL..."
+LATEST_JSON=$(curl -fsSL "$LATEST_URL" 2>&1)
+if [ $? -ne 0 ]; then
+    log "ERROR: Failed to fetch latest.json from S3: $LATEST_JSON"
+    exit 1
+fi
+
+WIDGET_VERSION=$(echo "$LATEST_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['version'])" 2>/dev/null)
+INSTALLER_URL=$(echo "$LATEST_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['mac'])" 2>/dev/null)
+
+if [ -z "$WIDGET_VERSION" ] || [ -z "$INSTALLER_URL" ]; then
+    log "ERROR: Could not parse version/URL from latest.json"
+    exit 1
+fi
+
+# Allow env var override (e.g. for testing a specific version)
+if [ -n "${ATLAS_INSTALLER_URL:-}" ]; then
+    INSTALLER_URL="$ATLAS_INSTALLER_URL"
+    log "URL overridden by ATLAS_INSTALLER_URL env var: $INSTALLER_URL"
+fi
+
 log "Version: $WIDGET_VERSION"
 log "URL: $INSTALLER_URL"
 

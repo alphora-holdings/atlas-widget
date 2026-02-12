@@ -2,24 +2,19 @@
 # deploy-atlas-widget.ps1
 # NinjaOne deployment script for ATLAS Widget (Windows)
 #
-# Upload this script to NinjaOne > Administration > Scripting > Add New Script
+# Upload this script to NinjaOne ONCE — it auto-discovers the
+# latest version from S3, so you never need to update it.
+#
 # Set to run as: SYSTEM (admin privileges)
 # Trigger: Run manually, or attach to a Policy for auto-deploy
-#
-# BEFORE RUNNING:
-#   1. Create a GitHub Release at alphora-holdings/atlas-widget with the .exe attached
-#   2. Verify the $InstallerUrl below points to the correct release
 # ═══════════════════════════════════════════════════════════
 
-# ─── CONFIG ─── Update these values before deploying ───
-$InstallerUrl   = $env:ATLAS_INSTALLER_URL
-if (-not $InstallerUrl) {
-    # GitHub Releases URL (update org/repo if different)
-    $InstallerUrl = "https://github.com/alphora-holdings/atlas-widget/releases/download/v1.0.0/ATLAS.Support.Setup.1.0.0.exe"
-}
-$WidgetVersion  = "1.0.0"
-$InstallDir     = "$env:ProgramFiles\ATLAS Support"
-# ───────────────────────────────────────────────────────
+# ─── CONFIG ───
+$S3Bucket   = "alphora-atlas-widget-releases"
+$S3Region   = "eu-west-1"
+$LatestUrl  = "https://${S3Bucket}.s3.${S3Region}.amazonaws.com/latest.json"
+$InstallDir = "$env:ProgramFiles\ATLAS Support"
+# ──────────────
 
 $ErrorActionPreference = "Stop"
 $LogFile = "$env:TEMP\atlas-widget-install.log"
@@ -32,10 +27,30 @@ function Write-Log {
 
 try {
     Write-Log "=== ATLAS Widget Deployment Starting ==="
+
+    # ── 0. Fetch latest version info from S3 ──
+    Write-Log "Fetching latest version info from $LatestUrl..."
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    try {
+        $latestJson = Invoke-WebRequest -Uri $LatestUrl -UseBasicParsing | ConvertFrom-Json
+        $WidgetVersion = $latestJson.version
+        $InstallerUrl  = $latestJson.windows
+        Write-Log "Latest version: $WidgetVersion"
+        Write-Log "Installer URL: $InstallerUrl"
+    } catch {
+        throw "Failed to fetch latest version info from S3: $($_.Exception.Message)"
+    }
+
+    # Allow env var override (e.g. for testing a specific version)
+    if ($env:ATLAS_INSTALLER_URL) {
+        $InstallerUrl = $env:ATLAS_INSTALLER_URL
+        Write-Log "URL overridden by ATLAS_INSTALLER_URL env var: $InstallerUrl"
+    }
+
     Write-Log "Version: $WidgetVersion"
     Write-Log "URL: $InstallerUrl"
 
-    # ── 0. Check if already installed at this version ──
+    # ── 1. Check if already installed at this version ──
     $existingExe = "$InstallDir\ATLAS Support.exe"
     if (Test-Path $existingExe) {
         Write-Log "ATLAS Widget already installed. Will reinstall/update."
@@ -44,10 +59,9 @@ try {
         Start-Sleep -Seconds 2
     }
 
-    # ── 1. Download installer ──
+    # ── 2. Download installer ──
     $installerPath = "$env:TEMP\ATLAS-Support-Setup.exe"
     Write-Log "Downloading installer..."
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -Uri $InstallerUrl -OutFile $installerPath -UseBasicParsing
     Write-Log "Download complete: $installerPath ($(((Get-Item $installerPath).Length / 1MB).ToString('F1')) MB)"
 

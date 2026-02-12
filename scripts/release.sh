@@ -3,9 +3,10 @@
 # release.sh — Build installers and upload to S3
 #
 # Usage:
-#   ./scripts/release.sh patch    # 1.0.0 → 1.0.1
-#   ./scripts/release.sh minor    # 1.0.0 → 1.1.0
-#   ./scripts/release.sh major    # 1.0.0 → 2.0.0
+#   ./scripts/release.sh patch       # 1.0.0 → 1.0.1
+#   ./scripts/release.sh minor       # 1.0.0 → 1.1.0
+#   ./scripts/release.sh major       # 1.0.0 → 2.0.0
+#   ./scripts/release.sh --no-bump   # build + upload using current version in package.json
 #
 # Prerequisites:
 #   - AWS CLI configured (`aws configure` or env vars)
@@ -24,24 +25,32 @@ set -euo pipefail
 
 # ─── CONFIG ───
 S3_BUCKET="alphora-atlas-widget-releases"
-S3_REGION="eu-west-1"  # Change to your region
+S3_REGION="eu-central-1"
 AWS_PROFILE=""          # Leave empty to use default profile
 # ──────────────
 
 BUMP_TYPE="${1:-}"
+NO_BUMP=false
+if [[ "$BUMP_TYPE" == "--no-bump" ]]; then
+    NO_BUMP=true
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_DIR"
 
 # ── Validate input ──
-if [[ -z "$BUMP_TYPE" ]] || [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
-    echo "Usage: ./scripts/release.sh [patch|minor|major]"
-    echo ""
-    echo "  patch  — bug fix        (1.0.0 → 1.0.1)"
-    echo "  minor  — new feature    (1.0.0 → 1.1.0)"
-    echo "  major  — breaking change (1.0.0 → 2.0.0)"
-    exit 1
+if [[ "$NO_BUMP" == false ]]; then
+    if [[ -z "$BUMP_TYPE" ]] || [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
+        echo "Usage: ./scripts/release.sh [patch|minor|major|--no-bump]"
+        echo ""
+        echo "  patch     — bug fix         (1.0.0 → 1.0.1)"
+        echo "  minor     — new feature     (1.0.0 → 1.1.0)"
+        echo "  major     — breaking change (1.0.0 → 2.0.0)"
+        echo "  --no-bump — build + upload without changing package.json version"
+        exit 1
+    fi
 fi
 
 # ── Check prerequisites ──
@@ -56,10 +65,16 @@ if [[ -n "$AWS_PROFILE" ]]; then
 fi
 $AWS_CMD sts get-caller-identity >/dev/null 2>&1 || { echo "❌ AWS credentials not configured. Run: aws configure"; exit 1; }
 
-# ── 1. Bump version ──
-echo "📦 Bumping version ($BUMP_TYPE)..."
-NEW_VERSION=$(npm version "$BUMP_TYPE" --no-git-tag-version | tr -d 'v')
-echo "   New version: $NEW_VERSION"
+# ── 1. Determine version (bump or use current) ──
+if [[ "$NO_BUMP" == true ]]; then
+    echo "📦 Using current version from package.json (--no-bump)..."
+    NEW_VERSION=$(node -p "require('./package.json').version" | tr -d 'v')
+else
+    echo "📦 Bumping version ($BUMP_TYPE)..."
+    NEW_VERSION=$(npm version "$BUMP_TYPE" --no-git-tag-version | tr -d 'v')
+fi
+
+echo "   Version: $NEW_VERSION"
 
 # ── 2. Build installers ──
 echo ""
@@ -140,13 +155,18 @@ echo "   ✅ latest.json → v${NEW_VERSION}"
 echo "   ✅ versions/v${NEW_VERSION}.json saved (rollback available)"
 
 # ── 5. Git commit, tag, push ──
-echo ""
-echo "🔖 Committing and tagging v${NEW_VERSION}..."
-git add -A
-git commit -m "release: v${NEW_VERSION}"
-git tag "v${NEW_VERSION}"
-git push origin main
-git push origin "v${NEW_VERSION}"
+if [[ "$NO_BUMP" == true ]]; then
+    echo ""
+    echo "ℹ️  --no-bump: skipping git commit/tag/push"
+else
+    echo ""
+    echo "🔖 Committing and tagging v${NEW_VERSION}..."
+    git add -A
+    git commit -m "release: v${NEW_VERSION}"
+    git tag "v${NEW_VERSION}"
+    git push origin main
+    git push origin "v${NEW_VERSION}"
+fi
 
 # ── 6. Summary ──
 echo ""

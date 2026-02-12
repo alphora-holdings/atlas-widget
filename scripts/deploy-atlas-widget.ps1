@@ -11,7 +11,7 @@
 
 # ─── CONFIG ───
 $S3Bucket   = "alphora-atlas-widget-releases"
-$S3Region   = "eu-west-1"
+$S3Region   = "eu-central-1"
 $InstallDir = "$env:ProgramFiles\ATLAS Support"
 
 # Deploy mode:

@@ -21,8 +21,36 @@ try {
 
     # ── 1. Stop running process ──
     Write-Log "Stopping ATLAS Widget process..."
-    Get-Process -Name "ATLAS Support" -ErrorAction SilentlyContinue | Stop-Process -Force
+    
+    # Try a few likely process names (Electron apps can appear under different names)
+    foreach ($procName in @("ATLAS Support", "ATLAS Support.exe", "atlas-widget", "ATLAS-Support")) {
+        Get-Process -Name $procName -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    }
+
+    # Also kill by executable path (covers renamed processes)
+    try {
+        $exePath = "$InstallDir\ATLAS Support.exe"
+        Get-CimInstance Win32_Process -Filter "Name='ATLAS Support.exe'" -ErrorAction SilentlyContinue |
+            Where-Object { $_.ExecutablePath -ieq $exePath } |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    } catch {
+        # ignore
+    }
+
     Start-Sleep -Seconds 2
+
+    # Ask Explorer to refresh tray icons (clears stale notification area entries)
+    try {
+        $explorerProcs = Get-Process explorer -ErrorAction SilentlyContinue
+        if ($explorerProcs) {
+            Write-Log "Refreshing Explorer shell to clear stale tray icon..."
+            $explorerProcs | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+            Start-Process explorer.exe | Out-Null
+        }
+    } catch {
+        Write-Log "Note: Could not refresh Explorer. Tray icon may disappear after next Explorer refresh/logout."
+    }
 
     # ── 2. Run uninstaller (NSIS creates "Uninstall ATLAS Support.exe") ──
     $uninstaller = "$InstallDir\Uninstall ATLAS Support.exe"

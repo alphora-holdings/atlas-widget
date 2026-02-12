@@ -12,6 +12,7 @@ APP_NAME="ATLAS Support"
 INSTALL_DIR="/Applications"
 PLIST_NAME="com.alphora.atlas-widget"
 LOG_FILE="/tmp/atlas-widget-uninstall.log"
+BUNDLE_ID="com.alphora.atlas-widget"
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
@@ -19,9 +20,33 @@ log() {
 
 log "=== ATLAS Widget macOS Uninstall Starting ==="
 
-# ── 1. Stop running process ──
+# ── 0. Stop running app (tray) more aggressively ──
+# pgrep/pkill by name can miss Electron helper processes, or the process name can differ.
+# We try bundle id first, then fall back to killing by app path/name.
+log "Stopping ATLAS Widget (tray)..."
+/usr/bin/pkill -x "ATLAS Support" 2>/dev/null || true
+/usr/bin/pkill -f "${INSTALL_DIR}/${APP_NAME}\.app" 2>/dev/null || true
+/usr/bin/pkill -f "$APP_NAME" 2>/dev/null || true
+
+# Kill by bundle id if possible
+if command -v osascript >/dev/null 2>&1; then
+    osascript -e "try" -e "tell application id \"${BUNDLE_ID}\" to quit" -e "end try" 2>/dev/null || true
+fi
+
+# Give it a moment to exit cleanly
+sleep 2
+
+# As a last resort, kill any remaining Electron helper processes tied to our app
+/usr/bin/pkill -f "${APP_NAME} Helper" 2>/dev/null || true
+/usr/bin/pkill -f "${APP_NAME} Helper \(Renderer\)" 2>/dev/null || true
+/usr/bin/pkill -f "${APP_NAME} Helper \(GPU\)" 2>/dev/null || true
+
+sleep 1
+
+# ── 1. Stop running process (legacy) ──
+# (kept for backwards compatibility / logging)
 if pgrep -f "$APP_NAME" > /dev/null 2>&1; then
-    log "Stopping ATLAS Widget..."
+    log "Stopping ATLAS Widget (fallback)..."
     pkill -f "$APP_NAME" || true
     sleep 2
 fi
@@ -29,7 +54,11 @@ fi
 # ── 2. Remove LaunchAgent ──
 PLIST_PATH="/Library/LaunchAgents/$PLIST_NAME.plist"
 if [ -f "$PLIST_PATH" ]; then
-    launchctl bootout gui/$(stat -f%u /dev/console) "$PLIST_PATH" 2>/dev/null
+    # bootout for current console user session (best-effort)
+    CONSOLE_UID=$(stat -f%u /dev/console 2>/dev/null || echo "")
+    if [ -n "$CONSOLE_UID" ]; then
+        launchctl bootout "gui/${CONSOLE_UID}" "$PLIST_PATH" 2>/dev/null || true
+    fi
     rm -f "$PLIST_PATH"
     log "LaunchAgent removed."
 fi

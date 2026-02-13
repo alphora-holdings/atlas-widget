@@ -156,6 +156,7 @@ ipcMain.handle('submit-ticket', async (_event, ticketData) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(ticketData),
+            signal: AbortSignal.timeout(30000),
         });
         const data = await response.json();
         if (response.ok) {
@@ -199,7 +200,7 @@ ipcMain.handle('resolve-email', async (_event, ninjaDeviceId: number) => {
         const response = await fetch(url, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(10000),
+            signal: AbortSignal.timeout(30000),
         });
         const data = await response.json();
         if (response.ok) {

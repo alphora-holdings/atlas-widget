@@ -18,6 +18,8 @@ declare global {
         atlasAPI: {
             getDeviceContext: () => Promise<DeviceContext>;
             submitTicket: (data: Record<string, unknown>) => Promise<SubmitResult>;
+            getTickets: (email: string) => Promise<GetTicketsResult>;
+            resolveEmail: (ninjaDeviceId: number) => Promise<ResolveEmailResult>;
             getConfig: () => Promise<{ apiBaseUrl: string }>;
             getLocale: () => Promise<string>;
             hideWindow: () => void;
@@ -63,6 +65,31 @@ interface SubmitResult {
     error?: string;
 }
 
+interface ApiTicket {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    category: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface GetTicketsResult {
+    success: boolean;
+    data?: {
+        tickets: ApiTicket[];
+        total: number;
+    };
+    error?: string;
+}
+
+interface ResolveEmailResult {
+    success: boolean;
+    email?: string | null;
+    error?: string;
+}
+
 // ── Sub-categories ─────────────────────────────────────────
 
 function getSubCategories(tr: Translations): Record<string, string[]> {
@@ -83,13 +110,67 @@ const $ = <T extends HTMLElement>(id: string): T =>
 
 // ── State ──────────────────────────────────────────────────
 
-type ViewId = 'main' | 'qr' | 'email' | 'email-success' | 'diagnose' | 'settings';
+type ViewId = 'main' | 'qr' | 'email' | 'email-success' | 'diagnose' | 'settings' | 'tickets';
 let currentView: ViewId = 'main';
 let deviceContext: DeviceContext | null = null;
 let currentLocale: Locale = 'en';
 let t: Translations = getTranslations('en');
 let diagStep = 1;
 let selectedQrCat = '';
+
+// ── Ticket History (API-based) ─────────────────────────────
+
+function getUserEmail(): string {
+    return $('user-email').textContent?.trim() || '';
+}
+
+async function updateTicketCountBadge() {
+    const email = getUserEmail();
+    const badge = $('ticket-count-badge');
+    if (!email || !email.includes('@')) {
+        badge.style.display = 'none';
+        return;
+    }
+    try {
+        const result = await window.atlasAPI.getTickets(email);
+        if (result.success && result.data) {
+            const count = result.data.total;
+            if (count > 0) {
+                badge.style.display = 'inline-flex';
+                badge.textContent = String(count);
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch {
+        badge.style.display = 'none';
+    }
+}
+
+/**
+ * Resolve the user's email from NinjaOne when domain is unavailable (macOS).
+ * Calls the backend to look up which system user owns this device,
+ * then updates the user-email DOM element and refreshes the ticket badge.
+ */
+async function resolveUserEmail(ninjaDeviceId: number) {
+    try {
+        const result = await window.atlasAPI.resolveEmail(ninjaDeviceId);
+        if (result.success && result.email) {
+            $('user-email').textContent = result.email;
+            // Update main view email display
+            const mainEmail = $('main-user-email');
+            if (mainEmail) {
+                mainEmail.textContent = `✉ ${result.email}`;
+            }
+            // Update settings view email
+            $('set-email').textContent = result.email;
+            // Re-fetch ticket count now that we have a valid email
+            updateTicketCountBadge();
+        }
+    } catch (err) {
+        console.warn('Failed to resolve email from NinjaOne:', err);
+    }
+}
 
 // ── View Navigation ────────────────────────────────────────
 
@@ -129,8 +210,16 @@ async function init() {
         updateMainStatus('offline', '—');
     }
 
+    // Resolve email from NinjaOne if domain is not available (macOS)
+    if (deviceContext && !deviceContext.domain && deviceContext.ninjaDeviceId) {
+        resolveUserEmail(deviceContext.ninjaDeviceId);
+    }
+
     // Check API connectivity
     checkApiConnection();
+
+    // Update ticket count badge
+    updateTicketCountBadge();
 
     // Wire up all event listeners
     wireEvents();
@@ -165,9 +254,22 @@ function populateAll(ctx: DeviceContext) {
         ? ctx.loggedInUser.replace(/\./g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
         : '—';
     $('user-name').textContent = fullName;
-    $('user-email').textContent = ctx.domain
-        ? `${ctx.loggedInUser}@${ctx.domain}`
-        : ctx.loggedInUser || '—';
+
+    // Set email: if domain is available, construct it locally.
+    // Otherwise, set placeholder — resolveUserEmail() will update it from NinjaOne.
+    if (ctx.domain) {
+        $('user-email').textContent = `${ctx.loggedInUser}@${ctx.domain}`;
+    } else {
+        $('user-email').textContent = ctx.loggedInUser || '—';
+    }
+
+    // Main view — show email under welcome
+    const mainEmail = $('main-user-email');
+    if (mainEmail) {
+        mainEmail.textContent = getUserEmail().includes('@')
+            ? `✉ ${getUserEmail()}`
+            : '';
+    }
 
     // Email form — device compact
     $('email-device').textContent = ctx.computerName;
@@ -178,6 +280,7 @@ function populateAll(ctx: DeviceContext) {
     // Settings view
     $('set-computer').textContent = ctx.computerName;
     $('set-user').textContent = ctx.loggedInUser;
+    $('set-email').textContent = getUserEmail().includes('@') ? getUserEmail() : '—';
     $('set-ninja').textContent = ctx.ninjaDeviceId ? String(ctx.ninjaDeviceId) : '—';
     $('set-tv').textContent = ctx.teamviewerId || '—';
     $('set-os').textContent = ctx.osVersion;
@@ -222,7 +325,7 @@ async function checkApiConnection() {
 
 function wireEvents() {
     // ─── Close buttons (all views) ───
-    const closeIds = ['btn-close', 'qr-close', 'email-close', 'email-success-close', 'diagnose-close', 'settings-close'];
+    const closeIds = ['btn-close', 'qr-close', 'email-close', 'email-success-close', 'diagnose-close', 'settings-close', 'tickets-close'];
     closeIds.forEach((id) => {
         const el = document.getElementById(id);
         el?.addEventListener('click', () => window.atlasAPI.hideWindow());
@@ -247,6 +350,10 @@ function wireEvents() {
         showView('diagnose');
     });
     $('action-settings').addEventListener('click', () => showView('settings'));
+    $('action-tickets').addEventListener('click', () => {
+        renderTicketsList();
+        showView('tickets');
+    });
 
     // ─── Quick actions (navigate to email with category pre-selected) ───
     document.querySelectorAll<HTMLButtonElement>('.quick-btn').forEach((btn) => {
@@ -263,7 +370,7 @@ function wireEvents() {
     });
 
     // ─── Back buttons ───
-    ['qr-back', 'email-back', 'diagnose-back', 'settings-back'].forEach((id) => {
+    ['qr-back', 'email-back', 'diagnose-back', 'settings-back', 'tickets-back'].forEach((id) => {
         $(id).addEventListener('click', () => showView('main'));
     });
 
@@ -409,6 +516,10 @@ function wireEmailForm() {
                 const ticketId = result.data.ticket.id;
                 const refCode = `ATLAS-${ticketId.substring(0, 8).toUpperCase()}`;
                 $('success-ref').textContent = `Reference: ${refCode}`;
+
+                // Refresh ticket count badge (async, non-blocking)
+                updateTicketCountBadge();
+
                 showView('email-success');
             } else {
                 showToast(result.error || t.toastSubmitFailed || 'Submission failed');
@@ -450,6 +561,156 @@ function resetEmailForm() {
     document.querySelectorAll('.urgency-pill').forEach((p) => p.classList.remove('active'));
     document.querySelector('.urgency-pill[data-urgency="normal"]')?.classList.add('active');
     $<HTMLInputElement>('field-urgency').value = 'normal';
+}
+
+// ── Tickets List Rendering ─────────────────────────────────
+
+async function renderTicketsList() {
+    const emptyState = $('tickets-empty');
+    const listScroll = $('tickets-list-scroll');
+    const listContainer = $('tickets-list');
+    const footer = $('tickets-footer');
+
+    const email = getUserEmail();
+    if (!email || !email.includes('@')) {
+        emptyState.style.display = 'flex';
+        listScroll.style.display = 'none';
+        footer.style.display = 'none';
+        return;
+    }
+
+    // Show loading state
+    listScroll.style.display = 'block';
+    emptyState.style.display = 'none';
+    footer.style.display = 'none';
+    listContainer.innerHTML = `
+        <div class="tickets-loading">
+            <span class="spinner"></span>
+            <span>${t.ticketLoading || 'Loading tickets…'}</span>
+        </div>
+    `;
+
+    try {
+        const result = await window.atlasAPI.getTickets(email);
+
+        if (!result.success || !result.data || result.data.tickets.length === 0) {
+            emptyState.style.display = 'flex';
+            listScroll.style.display = 'none';
+            footer.style.display = 'none';
+            return;
+        }
+
+        const tickets = result.data.tickets;
+
+        listContainer.innerHTML = tickets.map((ticket: ApiTicket) => {
+            const statusClass = mapStatusClass(ticket.status);
+            const statusLabel = mapStatusLabel(ticket.status);
+            const timeAgo = formatTimeAgo(ticket.createdAt);
+            const refCode = `ATLAS-${ticket.id.substring(0, 8).toUpperCase()}`;
+
+            return `
+                <div class="ticket-card" data-ticket-id="${ticket.id}">
+                    <div class="ticket-card-header">
+                        <span class="ticket-card-title" title="${escapeHtml(ticket.title)}">${escapeHtml(ticket.title)}</span>
+                        <span class="ticket-status-badge ${statusClass}">${statusLabel}</span>
+                    </div>
+                    <div class="ticket-card-meta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        <span>${escapeHtml(ticket.category || '—')}</span>
+                        <span class="ticket-meta-sep">·</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>${timeAgo}</span>
+                    </div>
+                    <div class="ticket-card-detail">
+                        <div class="ticket-detail-row">
+                            <span>${t.ticketReference || 'Reference'}</span>
+                            <span>${refCode}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span>${t.urgency || 'Urgency'}</span>
+                            <span>${ticket.priority.toUpperCase()}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span>${t.ticketCreatedAt || 'Created'}</span>
+                            <span>${formatDate(ticket.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Wire expand/collapse on ticket cards
+        listContainer.querySelectorAll<HTMLElement>('.ticket-card').forEach((card) => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('expanded');
+            });
+        });
+    } catch (err) {
+        console.error('Failed to fetch tickets:', err);
+        emptyState.style.display = 'flex';
+        listScroll.style.display = 'none';
+        footer.style.display = 'none';
+    }
+}
+
+function mapStatusClass(status: string): string {
+    switch (status) {
+        case 'new':
+        case 'processing':
+            return 'status-open';
+        case 'in_progress':
+            return 'status-in-progress';
+        case 'resolved':
+        case 'closed':
+            return 'status-resolved';
+        default:
+            return 'status-open';
+    }
+}
+
+function mapStatusLabel(status: string): string {
+    switch (status) {
+        case 'new':
+        case 'processing':
+            return t.ticketStatusOpen || 'Open';
+        case 'in_progress':
+            return t.ticketStatusInProgress || 'In Progress';
+        case 'resolved':
+        case 'closed':
+            return t.ticketStatusResolved || 'Resolved';
+        default:
+            return t.ticketStatusOpen || 'Open';
+    }
+}
+
+function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function formatTimeAgo(isoDate: string): string {
+    const now = Date.now();
+    const then = new Date(isoDate).getTime();
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t.ticketJustNow || 'Just now';
+    if (diffMins < 60) return `${diffMins}m ${t.ticketAgo || 'ago'}`;
+    if (diffHours < 24) return `${diffHours}h ${t.ticketAgo || 'ago'}`;
+    if (diffDays < 7) return `${diffDays}d ${t.ticketAgo || 'ago'}`;
+    return formatDate(isoDate);
+}
+
+function formatDate(isoDate: string): string {
+    const d = new Date(isoDate);
+    return d.toLocaleDateString(currentLocale === 'de' ? 'de-DE' : 'en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
 }
 
 // ── Diagnose Wizard ────────────────────────────────────────

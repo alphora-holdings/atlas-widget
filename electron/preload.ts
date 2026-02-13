@@ -20,6 +20,19 @@ contextBridge.exposeInMainWorld('atlasAPI', {
         ipcRenderer.invoke('submit-ticket', ticketData),
 
     /**
+     * Fetch submitted tickets for a user from the backend API.
+     */
+    getTickets: (email: string) =>
+        ipcRenderer.invoke('get-tickets', email),
+
+    /**
+     * Resolve a user's email from their NinjaOne device ID.
+     * Used on macOS where Active Directory domain is unavailable.
+     */
+    resolveEmail: (ninjaDeviceId: number) =>
+        ipcRenderer.invoke('resolve-email', ninjaDeviceId),
+
+    /**
      * Get the configured API base URL.
      */
     getConfig: () => ipcRenderer.invoke('get-config'),

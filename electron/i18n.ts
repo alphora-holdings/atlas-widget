@@ -139,6 +139,100 @@ export interface Translations {
     notInstalled: string;
     unknown: string;
 
+    // New v2 UI keys
+    welcomeSub2: string;
+    actionWhatsapp: string;
+    actionWhatsappSub: string;
+    actionEmail: string;
+    actionEmailSub: string;
+    actionDiagnose: string;
+    actionDiagnoseSub: string;
+    badgeFastest: string;
+    badgeNew: string;
+    commonIssues: string;
+    qaPrinter: string;
+    qaPassword: string;
+    qaInternet: string;
+    qaNetwork: string;
+    qaOther: string;
+    back: string;
+    qrTitle: string;
+    qrSub: string;
+    qrCatLabel: string;
+    qrHint: string;
+    qrHintSub: string;
+    qrTimer: string;
+    qrInfoSent: string;
+    qrCopy: string;
+    deviceLabel: string;
+    categoryLabel: string;
+    emailTitle: string;
+    emailSub: string;
+    category: string;
+    selectCategory: string;
+    subcategory: string;
+    selectSubcategory: string;
+    summary: string;
+    summaryPlaceholder: string;
+    description: string;
+    descriptionPlaceholder: string;
+    urgency: string;
+    urgLow: string;
+    urgNormal: string;
+    urgHigh: string;
+    urgCritical: string;
+    screenshotLabel: string;
+    screenshotBtn: string;
+    deviceInfo: string;
+    autoDetected: string;
+    sendTicket: string;
+    sending: string;
+    ticketSubmitted: string;
+    ticketSubmittedSub: string;
+    submitAnother: string;
+    backToHome: string;
+    diagnoseTitle: string;
+    step: string;
+    of: string;
+    diagWhatsWrong: string;
+    diagSelectCat: string;
+    diagPrinter: string;
+    diagInternet: string;
+    diagSlow: string;
+    diagEmail: string;
+    diagLogin: string;
+    diagRunning: string;
+    diagChecking: string;
+    diagConnCheck: string;
+    diagQueueCheck: string;
+    diagDriverCheck: string;
+    continue: string;
+    diagProblemFound: string;
+    diagIssueId: string;
+    diagIssueDetected: string;
+    diagRecommended: string;
+    diagAutoFix: string;
+    diagTalkSupport: string;
+    diagFixed: string;
+    diagAllGood: string;
+    done: string;
+    diagStillBroken: string;
+    settingsTitle: string;
+    connected: string;
+    allSystemsOp: string;
+    setComputer: string;
+    setUser: string;
+    setOS: string;
+    setIP: string;
+    privacy: string;
+    shareDevice: string;
+    sendErrors: string;
+    autoScreenshots: string;
+    notifications: string;
+    showTips: string;
+    ticketUpdates: string;
+    supportContact: string;
+
     // Tray menu (used by main process)
     trayOpen: string;
     trayExit: string;
@@ -270,6 +364,100 @@ const en: Translations = {
     trayTooltip: 'ATLAS Support — Click for help',
 
     closeTitle: 'Close',
+
+    // v2 UI keys
+    welcomeSub2: 'How can we help you?',
+    actionWhatsapp: 'WhatsApp Support',
+    actionWhatsappSub: 'Scan QR code and start chatting',
+    actionEmail: 'Email Support',
+    actionEmailSub: 'Create a detailed ticket',
+    actionDiagnose: 'Self-Diagnose',
+    actionDiagnoseSub: 'Fix problems with guided help',
+    badgeFastest: 'Fastest',
+    badgeNew: 'New',
+    commonIssues: 'Common Issues',
+    qaPrinter: 'Printer',
+    qaPassword: 'Password',
+    qaInternet: 'Internet',
+    qaNetwork: 'Network',
+    qaOther: 'Other',
+    back: 'Back',
+    qrTitle: 'WhatsApp Support',
+    qrSub: 'Scan with your phone',
+    qrCatLabel: 'What is it about? (optional)',
+    qrHint: 'Point camera at the QR code',
+    qrHintSub: 'WhatsApp will open automatically',
+    qrTimer: 'Valid for 15 minutes',
+    qrInfoSent: 'This info will be sent along:',
+    qrCopy: "Can't scan? Copy message",
+    deviceLabel: 'Device',
+    categoryLabel: 'Category',
+    emailTitle: 'Email Support',
+    emailSub: "We'll get back to you ASAP",
+    category: 'Category',
+    selectCategory: 'Select a category…',
+    subcategory: 'Specific Issue',
+    selectSubcategory: 'Select…',
+    summary: 'Summary',
+    summaryPlaceholder: 'e.g. Printer is not printing',
+    description: 'Description',
+    descriptionPlaceholder: 'Please describe the problem in more detail…',
+    urgency: 'Urgency',
+    urgLow: 'Low',
+    urgNormal: 'Normal',
+    urgHigh: 'High',
+    urgCritical: 'Critical',
+    screenshotLabel: 'Screenshot (optional)',
+    screenshotBtn: 'Click to take a screenshot',
+    deviceInfo: 'Device Information',
+    autoDetected: 'Auto-detected',
+    sendTicket: 'Send Ticket',
+    sending: 'Sending…',
+    ticketSubmitted: 'Ticket Submitted!',
+    ticketSubmittedSub: "We've received your request and will get back to you shortly.",
+    submitAnother: 'Submit Another Ticket',
+    backToHome: 'Back to Home',
+    diagnoseTitle: 'Self-Diagnose',
+    step: 'Step',
+    of: 'of',
+    diagWhatsWrong: "What's the problem?",
+    diagSelectCat: 'Select a category',
+    diagPrinter: 'Printer not working',
+    diagInternet: 'No Internet',
+    diagSlow: 'Computer is slow',
+    diagEmail: 'Email problems',
+    diagLogin: 'Login failed',
+    diagRunning: 'Running Diagnostics',
+    diagChecking: 'Checking your system…',
+    diagConnCheck: 'Connection check',
+    diagQueueCheck: 'Queue check',
+    diagDriverCheck: 'Driver status…',
+    continue: 'Continue',
+    diagProblemFound: 'Problem found!',
+    diagIssueId: 'Issue identified',
+    diagIssueDetected: 'Issue detected',
+    diagRecommended: 'Recommended solution:',
+    diagAutoFix: 'Auto-fix',
+    diagTalkSupport: 'Talk to support instead',
+    diagFixed: 'Problem fixed! ✓',
+    diagAllGood: 'Everything should work now',
+    done: 'Done',
+    diagStillBroken: 'Problem persists',
+    settingsTitle: 'Settings',
+    connected: 'Connected',
+    allSystemsOp: 'All systems operational',
+    setComputer: 'Computer Name',
+    setUser: 'Logged-in User',
+    setOS: 'Operating System',
+    setIP: 'IP Address',
+    privacy: 'Privacy',
+    shareDevice: 'Share device context',
+    sendErrors: 'Send error reports',
+    autoScreenshots: 'Auto screenshots',
+    notifications: 'Notifications',
+    showTips: 'Show tips & hints',
+    ticketUpdates: 'Ticket updates',
+    supportContact: 'Support Contact',
 };
 
 const de: Translations = {
@@ -394,6 +582,100 @@ const de: Translations = {
     trayTooltip: 'ATLAS Support — Klicken für Hilfe',
 
     closeTitle: 'Schließen',
+
+    // v2 UI keys
+    welcomeSub2: 'Wie können wir Ihnen helfen?',
+    actionWhatsapp: 'WhatsApp Support',
+    actionWhatsappSub: 'QR-Code scannen und chatten',
+    actionEmail: 'E-Mail Support',
+    actionEmailSub: 'Erstellen Sie ein detailliertes Ticket',
+    actionDiagnose: 'Selbstdiagnose',
+    actionDiagnoseSub: 'Probleme mit geführter Hilfe lösen',
+    badgeFastest: 'Schnellste',
+    badgeNew: 'Neu',
+    commonIssues: 'Häufige Probleme',
+    qaPrinter: 'Drucker',
+    qaPassword: 'Passwort',
+    qaInternet: 'Internet',
+    qaNetwork: 'Netzwerk',
+    qaOther: 'Sonstiges',
+    back: 'Zurück',
+    qrTitle: 'WhatsApp Support',
+    qrSub: 'Mit dem Handy scannen',
+    qrCatLabel: 'Worum geht es? (optional)',
+    qrHint: 'Kamera auf den QR-Code richten',
+    qrHintSub: 'WhatsApp öffnet sich automatisch',
+    qrTimer: 'Gültig für 15 Minuten',
+    qrInfoSent: 'Diese Informationen werden mitgesendet:',
+    qrCopy: 'Kann nicht scannen? Nachricht kopieren',
+    deviceLabel: 'Gerät',
+    categoryLabel: 'Kategorie',
+    emailTitle: 'E-Mail Support',
+    emailSub: 'Wir melden uns schnellstmöglich',
+    category: 'Kategorie',
+    selectCategory: 'Kategorie auswählen…',
+    subcategory: 'Spezifisches Problem',
+    selectSubcategory: 'Auswählen…',
+    summary: 'Zusammenfassung',
+    summaryPlaceholder: 'z.B. Drucker druckt nicht',
+    description: 'Beschreibung',
+    descriptionPlaceholder: 'Bitte beschreiben Sie das Problem genauer…',
+    urgency: 'Dringlichkeit',
+    urgLow: 'Niedrig',
+    urgNormal: 'Normal',
+    urgHigh: 'Hoch',
+    urgCritical: 'Kritisch',
+    screenshotLabel: 'Screenshot (optional)',
+    screenshotBtn: 'Klicken für Screenshot',
+    deviceInfo: 'Geräteinformationen',
+    autoDetected: 'Automatisch erkannt',
+    sendTicket: 'Ticket absenden',
+    sending: 'Wird gesendet…',
+    ticketSubmitted: 'Ticket gesendet!',
+    ticketSubmittedSub: 'Wir haben Ihre Anfrage erhalten und melden uns in Kürze.',
+    submitAnother: 'Weiteres Ticket erstellen',
+    backToHome: 'Zurück zur Startseite',
+    diagnoseTitle: 'Selbstdiagnose',
+    step: 'Schritt',
+    of: 'von',
+    diagWhatsWrong: 'Was ist das Problem?',
+    diagSelectCat: 'Kategorie auswählen',
+    diagPrinter: 'Drucker funktioniert nicht',
+    diagInternet: 'Kein Internet',
+    diagSlow: 'Computer ist langsam',
+    diagEmail: 'E-Mail-Probleme',
+    diagLogin: 'Anmeldung fehlgeschlagen',
+    diagRunning: 'Diagnose läuft',
+    diagChecking: 'System wird überprüft…',
+    diagConnCheck: 'Verbindungsprüfung',
+    diagQueueCheck: 'Warteschlangenprüfung',
+    diagDriverCheck: 'Treiberstatus…',
+    continue: 'Weiter',
+    diagProblemFound: 'Problem gefunden!',
+    diagIssueId: 'Problem identifiziert',
+    diagIssueDetected: 'Problem erkannt',
+    diagRecommended: 'Empfohlene Lösung:',
+    diagAutoFix: 'Automatisch beheben',
+    diagTalkSupport: 'Lieber mit Support sprechen',
+    diagFixed: 'Problem behoben! ✓',
+    diagAllGood: 'Alles sollte jetzt funktionieren',
+    done: 'Fertig',
+    diagStillBroken: 'Problem besteht weiterhin',
+    settingsTitle: 'Einstellungen',
+    connected: 'Verbunden',
+    allSystemsOp: 'Alle Systeme funktionsfähig',
+    setComputer: 'Computername',
+    setUser: 'Angemeldeter Benutzer',
+    setOS: 'Betriebssystem',
+    setIP: 'IP-Adresse',
+    privacy: 'Datenschutz',
+    shareDevice: 'Gerätekontext teilen',
+    sendErrors: 'Fehlerberichte senden',
+    autoScreenshots: 'Automatische Screenshots',
+    notifications: 'Benachrichtigungen',
+    showTips: 'Tipps & Hinweise anzeigen',
+    ticketUpdates: 'Ticket-Updates',
+    supportContact: 'Support-Kontakt',
 };
 
 const translations: Record<Locale, Translations> = { en, de };

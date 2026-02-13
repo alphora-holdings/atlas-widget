@@ -18,6 +18,7 @@ declare global {
         atlasAPI: {
             getDeviceContext: () => Promise<DeviceContext>;
             submitTicket: (data: Record<string, unknown>) => Promise<SubmitResult>;
+            getTickets: (email: string) => Promise<GetTicketsResult>;
             getConfig: () => Promise<{ apiBaseUrl: string }>;
             getLocale: () => Promise<string>;
             hideWindow: () => void;
@@ -63,6 +64,25 @@ interface SubmitResult {
     error?: string;
 }
 
+interface ApiTicket {
+    id: string;
+    title: string;
+    status: string;
+    priority: string;
+    category: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface GetTicketsResult {
+    success: boolean;
+    data?: {
+        tickets: ApiTicket[];
+        total: number;
+    };
+    error?: string;
+}
+
 // ── Sub-categories ─────────────────────────────────────────
 
 function getSubCategories(tr: Translations): Record<string, string[]> {
@@ -91,42 +111,31 @@ let t: Translations = getTranslations('en');
 let diagStep = 1;
 let selectedQrCat = '';
 
-// ── Ticket History Storage ─────────────────────────────────
+// ── Ticket History (API-based) ─────────────────────────────
 
-interface StoredTicket {
-    id: string;
-    refCode: string;
-    title: string;
-    category: string;
-    urgency: string;
-    status: 'open' | 'in-progress' | 'resolved';
-    createdAt: string;
+function getUserEmail(): string {
+    return $('user-email').textContent?.trim() || '';
 }
 
-const TICKETS_STORAGE_KEY = 'atlas-widget-tickets';
-
-function loadTickets(): StoredTicket[] {
-    try {
-        const raw = localStorage.getItem(TICKETS_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch {
-        return [];
-    }
-}
-
-function saveTicket(ticket: StoredTicket) {
-    const tickets = loadTickets();
-    tickets.unshift(ticket); // newest first
-    localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
-}
-
-function updateTicketCountBadge() {
-    const tickets = loadTickets();
+async function updateTicketCountBadge() {
+    const email = getUserEmail();
     const badge = $('ticket-count-badge');
-    if (tickets.length > 0) {
-        badge.style.display = 'inline-flex';
-        badge.textContent = String(tickets.length);
-    } else {
+    if (!email) {
+        badge.style.display = 'none';
+        return;
+    }
+    try {
+        const result = await window.atlasAPI.getTickets(email);
+        if (result.success && result.data) {
+            const count = result.data.total;
+            if (count > 0) {
+                badge.style.display = 'inline-flex';
+                badge.textContent = String(count);
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch {
         badge.style.display = 'none';
     }
 }
@@ -373,10 +382,6 @@ function wireEvents() {
     // ─── Diagnose wizard ───
     wireDiagnoseWizard();
 
-    // ─── Tickets view buttons ───
-    $('tickets-create-first').addEventListener('click', () => showView('email'));
-    $('tickets-new').addEventListener('click', () => showView('email'));
-
     // ─── Settings toggles ───
     document.querySelectorAll<HTMLElement>('.toggle').forEach((toggle) => {
         toggle.addEventListener('click', () => {
@@ -461,16 +466,7 @@ function wireEmailForm() {
                 const refCode = `ATLAS-${ticketId.substring(0, 8).toUpperCase()}`;
                 $('success-ref').textContent = `Reference: ${refCode}`;
 
-                // Save ticket to local history
-                saveTicket({
-                    id: ticketId,
-                    refCode,
-                    title: summary,
-                    category: fullCategory,
-                    urgency,
-                    status: 'open',
-                    createdAt: new Date().toISOString(),
-                });
+                // Refresh ticket count badge (async, non-blocking)
                 updateTicketCountBadge();
 
                 showView('email-success');
@@ -518,70 +514,122 @@ function resetEmailForm() {
 
 // ── Tickets List Rendering ─────────────────────────────────
 
-function renderTicketsList() {
-    const tickets = loadTickets();
+async function renderTicketsList() {
     const emptyState = $('tickets-empty');
     const listScroll = $('tickets-list-scroll');
     const listContainer = $('tickets-list');
     const footer = $('tickets-footer');
 
-    if (tickets.length === 0) {
+    const email = getUserEmail();
+    if (!email) {
         emptyState.style.display = 'flex';
         listScroll.style.display = 'none';
         footer.style.display = 'none';
         return;
     }
 
-    emptyState.style.display = 'none';
+    // Show loading state
     listScroll.style.display = 'block';
-    footer.style.display = 'block';
+    emptyState.style.display = 'none';
+    footer.style.display = 'none';
+    listContainer.innerHTML = `
+        <div class="tickets-loading">
+            <span class="spinner"></span>
+            <span>${t.ticketLoading || 'Loading tickets…'}</span>
+        </div>
+    `;
 
-    listContainer.innerHTML = tickets.map((ticket) => {
-        const statusClass = ticket.status === 'open' ? 'status-open'
-            : ticket.status === 'in-progress' ? 'status-in-progress'
-            : 'status-resolved';
-        const statusLabel = ticket.status === 'open' ? (t.ticketStatusOpen || 'Open')
-            : ticket.status === 'in-progress' ? (t.ticketStatusInProgress || 'In Progress')
-            : (t.ticketStatusResolved || 'Resolved');
-        const timeAgo = formatTimeAgo(ticket.createdAt);
+    try {
+        const result = await window.atlasAPI.getTickets(email);
 
-        return `
-            <div class="ticket-card" data-ticket-id="${ticket.id}">
-                <div class="ticket-card-header">
-                    <span class="ticket-card-title" title="${escapeHtml(ticket.title)}">${escapeHtml(ticket.title)}</span>
-                    <span class="ticket-status-badge ${statusClass}">${statusLabel}</span>
-                </div>
-                <div class="ticket-card-meta">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                    <span>${escapeHtml(ticket.category)}</span>
-                    <span class="ticket-meta-sep">·</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span>${timeAgo}</span>
-                </div>
-                <div class="ticket-card-detail">
-                    <div class="ticket-detail-row">
-                        <span>${t.ticketReference || 'Reference'}</span>
-                        <span>${ticket.refCode}</span>
-                    </div>
-                    <div class="ticket-detail-row">
-                        <span>${t.urgency || 'Urgency'}</span>
-                        <span>${ticket.urgency.toUpperCase()}</span>
-                    </div>
-                    <div class="ticket-detail-row">
-                        <span>${t.ticketCreatedAt || 'Created'}</span>
-                        <span>${formatDate(ticket.createdAt)}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
+        if (!result.success || !result.data || result.data.tickets.length === 0) {
+            emptyState.style.display = 'flex';
+            listScroll.style.display = 'none';
+            footer.style.display = 'none';
+            return;
+        }
 
-    // Wire expand/collapse on ticket cards
-    listContainer.querySelectorAll<HTMLElement>('.ticket-card').forEach((card) => {
-        card.addEventListener('click', () => {
-            card.classList.toggle('expanded');
+        const tickets = result.data.tickets;
+
+        listContainer.innerHTML = tickets.map((ticket: ApiTicket) => {
+            const statusClass = mapStatusClass(ticket.status);
+            const statusLabel = mapStatusLabel(ticket.status);
+            const timeAgo = formatTimeAgo(ticket.createdAt);
+            const refCode = `ATLAS-${ticket.id.substring(0, 8).toUpperCase()}`;
+
+            return `
+                <div class="ticket-card" data-ticket-id="${ticket.id}">
+                    <div class="ticket-card-header">
+                        <span class="ticket-card-title" title="${escapeHtml(ticket.title)}">${escapeHtml(ticket.title)}</span>
+                        <span class="ticket-status-badge ${statusClass}">${statusLabel}</span>
+                    </div>
+                    <div class="ticket-card-meta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        <span>${escapeHtml(ticket.category || '—')}</span>
+                        <span class="ticket-meta-sep">·</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>${timeAgo}</span>
+                    </div>
+                    <div class="ticket-card-detail">
+                        <div class="ticket-detail-row">
+                            <span>${t.ticketReference || 'Reference'}</span>
+                            <span>${refCode}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span>${t.urgency || 'Urgency'}</span>
+                            <span>${ticket.priority.toUpperCase()}</span>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <span>${t.ticketCreatedAt || 'Created'}</span>
+                            <span>${formatDate(ticket.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Wire expand/collapse on ticket cards
+        listContainer.querySelectorAll<HTMLElement>('.ticket-card').forEach((card) => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('expanded');
+            });
         });
-    });
+    } catch (err) {
+        console.error('Failed to fetch tickets:', err);
+        emptyState.style.display = 'flex';
+        listScroll.style.display = 'none';
+        footer.style.display = 'none';
+    }
+}
+
+function mapStatusClass(status: string): string {
+    switch (status) {
+        case 'new':
+        case 'processing':
+            return 'status-open';
+        case 'in_progress':
+            return 'status-in-progress';
+        case 'resolved':
+        case 'closed':
+            return 'status-resolved';
+        default:
+            return 'status-open';
+    }
+}
+
+function mapStatusLabel(status: string): string {
+    switch (status) {
+        case 'new':
+        case 'processing':
+            return t.ticketStatusOpen || 'Open';
+        case 'in_progress':
+            return t.ticketStatusInProgress || 'In Progress';
+        case 'resolved':
+        case 'closed':
+            return t.ticketStatusResolved || 'Resolved';
+        default:
+            return t.ticketStatusOpen || 'Open';
+    }
 }
 
 function escapeHtml(str: string): string {

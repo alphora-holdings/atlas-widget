@@ -20,6 +20,12 @@ contextBridge.exposeInMainWorld('atlasAPI', {
         ipcRenderer.invoke('submit-ticket', ticketData),
 
     /**
+     * Fetch submitted tickets for a user from the backend API.
+     */
+    getTickets: (email: string) =>
+        ipcRenderer.invoke('get-tickets', email),
+
+    /**
      * Get the configured API base URL.
      */
     getConfig: () => ipcRenderer.invoke('get-config'),

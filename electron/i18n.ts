@@ -254,6 +254,7 @@ export interface Translations {
     ticketStatusResolved: string;
     ticketReference: string;
     ticketCreatedAt: string;
+    ticketLoading: string;
     ticketJustNow: string;
     ticketAgo: string;
 }
@@ -488,6 +489,7 @@ const en: Translations = {
     ticketStatusResolved: 'Resolved',
     ticketReference: 'Reference',
     ticketCreatedAt: 'Created',
+    ticketLoading: 'Loading tickets…',
     ticketJustNow: 'Just now',
     ticketAgo: 'ago',
 };
@@ -722,6 +724,7 @@ const de: Translations = {
     ticketStatusResolved: 'Gelöst',
     ticketReference: 'Referenz',
     ticketCreatedAt: 'Erstellt',
+    ticketLoading: 'Tickets werden geladen…',
     ticketJustNow: 'Gerade eben',
     ticketAgo: 'her',
 };

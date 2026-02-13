@@ -83,13 +83,53 @@ const $ = <T extends HTMLElement>(id: string): T =>
 
 // ── State ──────────────────────────────────────────────────
 
-type ViewId = 'main' | 'qr' | 'email' | 'email-success' | 'diagnose' | 'settings';
+type ViewId = 'main' | 'qr' | 'email' | 'email-success' | 'diagnose' | 'settings' | 'tickets';
 let currentView: ViewId = 'main';
 let deviceContext: DeviceContext | null = null;
 let currentLocale: Locale = 'en';
 let t: Translations = getTranslations('en');
 let diagStep = 1;
 let selectedQrCat = '';
+
+// ── Ticket History Storage ─────────────────────────────────
+
+interface StoredTicket {
+    id: string;
+    refCode: string;
+    title: string;
+    category: string;
+    urgency: string;
+    status: 'open' | 'in-progress' | 'resolved';
+    createdAt: string;
+}
+
+const TICKETS_STORAGE_KEY = 'atlas-widget-tickets';
+
+function loadTickets(): StoredTicket[] {
+    try {
+        const raw = localStorage.getItem(TICKETS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveTicket(ticket: StoredTicket) {
+    const tickets = loadTickets();
+    tickets.unshift(ticket); // newest first
+    localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
+}
+
+function updateTicketCountBadge() {
+    const tickets = loadTickets();
+    const badge = $('ticket-count-badge');
+    if (tickets.length > 0) {
+        badge.style.display = 'inline-flex';
+        badge.textContent = String(tickets.length);
+    } else {
+        badge.style.display = 'none';
+    }
+}
 
 // ── View Navigation ────────────────────────────────────────
 
@@ -131,6 +171,9 @@ async function init() {
 
     // Check API connectivity
     checkApiConnection();
+
+    // Update ticket count badge
+    updateTicketCountBadge();
 
     // Wire up all event listeners
     wireEvents();
@@ -222,7 +265,7 @@ async function checkApiConnection() {
 
 function wireEvents() {
     // ─── Close buttons (all views) ───
-    const closeIds = ['btn-close', 'qr-close', 'email-close', 'email-success-close', 'diagnose-close', 'settings-close'];
+    const closeIds = ['btn-close', 'qr-close', 'email-close', 'email-success-close', 'diagnose-close', 'settings-close', 'tickets-close'];
     closeIds.forEach((id) => {
         const el = document.getElementById(id);
         el?.addEventListener('click', () => window.atlasAPI.hideWindow());
@@ -247,6 +290,10 @@ function wireEvents() {
         showView('diagnose');
     });
     $('action-settings').addEventListener('click', () => showView('settings'));
+    $('action-tickets').addEventListener('click', () => {
+        renderTicketsList();
+        showView('tickets');
+    });
 
     // ─── Quick actions (navigate to email with category pre-selected) ───
     document.querySelectorAll<HTMLButtonElement>('.quick-btn').forEach((btn) => {
@@ -263,7 +310,7 @@ function wireEvents() {
     });
 
     // ─── Back buttons ───
-    ['qr-back', 'email-back', 'diagnose-back', 'settings-back'].forEach((id) => {
+    ['qr-back', 'email-back', 'diagnose-back', 'settings-back', 'tickets-back'].forEach((id) => {
         $(id).addEventListener('click', () => showView('main'));
     });
 
@@ -325,6 +372,10 @@ function wireEvents() {
 
     // ─── Diagnose wizard ───
     wireDiagnoseWizard();
+
+    // ─── Tickets view buttons ───
+    $('tickets-create-first').addEventListener('click', () => showView('email'));
+    $('tickets-new').addEventListener('click', () => showView('email'));
 
     // ─── Settings toggles ───
     document.querySelectorAll<HTMLElement>('.toggle').forEach((toggle) => {
@@ -409,6 +460,19 @@ function wireEmailForm() {
                 const ticketId = result.data.ticket.id;
                 const refCode = `ATLAS-${ticketId.substring(0, 8).toUpperCase()}`;
                 $('success-ref').textContent = `Reference: ${refCode}`;
+
+                // Save ticket to local history
+                saveTicket({
+                    id: ticketId,
+                    refCode,
+                    title: summary,
+                    category: fullCategory,
+                    urgency,
+                    status: 'open',
+                    createdAt: new Date().toISOString(),
+                });
+                updateTicketCountBadge();
+
                 showView('email-success');
             } else {
                 showToast(result.error || t.toastSubmitFailed || 'Submission failed');
@@ -450,6 +514,104 @@ function resetEmailForm() {
     document.querySelectorAll('.urgency-pill').forEach((p) => p.classList.remove('active'));
     document.querySelector('.urgency-pill[data-urgency="normal"]')?.classList.add('active');
     $<HTMLInputElement>('field-urgency').value = 'normal';
+}
+
+// ── Tickets List Rendering ─────────────────────────────────
+
+function renderTicketsList() {
+    const tickets = loadTickets();
+    const emptyState = $('tickets-empty');
+    const listScroll = $('tickets-list-scroll');
+    const listContainer = $('tickets-list');
+    const footer = $('tickets-footer');
+
+    if (tickets.length === 0) {
+        emptyState.style.display = 'flex';
+        listScroll.style.display = 'none';
+        footer.style.display = 'none';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    listScroll.style.display = 'block';
+    footer.style.display = 'block';
+
+    listContainer.innerHTML = tickets.map((ticket) => {
+        const statusClass = ticket.status === 'open' ? 'status-open'
+            : ticket.status === 'in-progress' ? 'status-in-progress'
+            : 'status-resolved';
+        const statusLabel = ticket.status === 'open' ? (t.ticketStatusOpen || 'Open')
+            : ticket.status === 'in-progress' ? (t.ticketStatusInProgress || 'In Progress')
+            : (t.ticketStatusResolved || 'Resolved');
+        const timeAgo = formatTimeAgo(ticket.createdAt);
+
+        return `
+            <div class="ticket-card" data-ticket-id="${ticket.id}">
+                <div class="ticket-card-header">
+                    <span class="ticket-card-title" title="${escapeHtml(ticket.title)}">${escapeHtml(ticket.title)}</span>
+                    <span class="ticket-status-badge ${statusClass}">${statusLabel}</span>
+                </div>
+                <div class="ticket-card-meta">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <span>${escapeHtml(ticket.category)}</span>
+                    <span class="ticket-meta-sep">·</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>${timeAgo}</span>
+                </div>
+                <div class="ticket-card-detail">
+                    <div class="ticket-detail-row">
+                        <span>${t.ticketReference || 'Reference'}</span>
+                        <span>${ticket.refCode}</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span>${t.urgency || 'Urgency'}</span>
+                        <span>${ticket.urgency.toUpperCase()}</span>
+                    </div>
+                    <div class="ticket-detail-row">
+                        <span>${t.ticketCreatedAt || 'Created'}</span>
+                        <span>${formatDate(ticket.createdAt)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Wire expand/collapse on ticket cards
+    listContainer.querySelectorAll<HTMLElement>('.ticket-card').forEach((card) => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('expanded');
+        });
+    });
+}
+
+function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function formatTimeAgo(isoDate: string): string {
+    const now = Date.now();
+    const then = new Date(isoDate).getTime();
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t.ticketJustNow || 'Just now';
+    if (diffMins < 60) return `${diffMins}m ${t.ticketAgo || 'ago'}`;
+    if (diffHours < 24) return `${diffHours}h ${t.ticketAgo || 'ago'}`;
+    if (diffDays < 7) return `${diffDays}d ${t.ticketAgo || 'ago'}`;
+    return formatDate(isoDate);
+}
+
+function formatDate(isoDate: string): string {
+    const d = new Date(isoDate);
+    return d.toLocaleDateString(currentLocale === 'de' ? 'de-DE' : 'en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
 }
 
 // ── Diagnose Wizard ────────────────────────────────────────

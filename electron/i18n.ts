@@ -240,6 +240,22 @@ export interface Translations {
 
     // Close button title
     closeTitle: string;
+
+    // Tickets History view
+    myTickets: string;
+    myTicketsTitle: string;
+    myTicketsSub: string;
+    noTicketsYet: string;
+    noTicketsDesc: string;
+    createTicket: string;
+    submitNewTicket: string;
+    ticketStatusOpen: string;
+    ticketStatusInProgress: string;
+    ticketStatusResolved: string;
+    ticketReference: string;
+    ticketCreatedAt: string;
+    ticketJustNow: string;
+    ticketAgo: string;
 }
 
 const en: Translations = {
@@ -458,6 +474,22 @@ const en: Translations = {
     showTips: 'Show tips & hints',
     ticketUpdates: 'Ticket updates',
     supportContact: 'Support Contact',
+
+    // Tickets History
+    myTickets: 'My Tickets',
+    myTicketsTitle: 'My Tickets',
+    myTicketsSub: 'Your submitted requests',
+    noTicketsYet: 'No tickets yet',
+    noTicketsDesc: 'Tickets you submit will appear here so you can track their status.',
+    createTicket: 'Create a Ticket',
+    submitNewTicket: 'Submit New Ticket',
+    ticketStatusOpen: 'Open',
+    ticketStatusInProgress: 'In Progress',
+    ticketStatusResolved: 'Resolved',
+    ticketReference: 'Reference',
+    ticketCreatedAt: 'Created',
+    ticketJustNow: 'Just now',
+    ticketAgo: 'ago',
 };
 
 const de: Translations = {
@@ -676,6 +708,22 @@ const de: Translations = {
     showTips: 'Tipps & Hinweise anzeigen',
     ticketUpdates: 'Ticket-Updates',
     supportContact: 'Support-Kontakt',
+
+    // Tickets History
+    myTickets: 'Meine Tickets',
+    myTicketsTitle: 'Meine Tickets',
+    myTicketsSub: 'Ihre eingereichten Anfragen',
+    noTicketsYet: 'Noch keine Tickets',
+    noTicketsDesc: 'Eingereichte Tickets werden hier angezeigt, damit Sie den Status verfolgen können.',
+    createTicket: 'Ticket erstellen',
+    submitNewTicket: 'Neues Ticket erstellen',
+    ticketStatusOpen: 'Offen',
+    ticketStatusInProgress: 'In Bearbeitung',
+    ticketStatusResolved: 'Gelöst',
+    ticketReference: 'Referenz',
+    ticketCreatedAt: 'Erstellt',
+    ticketJustNow: 'Gerade eben',
+    ticketAgo: 'her',
 };
 
 const translations: Record<Locale, Translations> = { en, de };

@@ -7,7 +7,10 @@
  *   - Form validation and submission
  *   - API call via IPC to main process
  *   - Success/error states
+ *   - i18n (English / German auto-detection)
  */
+
+import { detectLocale, getTranslations, type Locale, type Translations } from '../electron/i18n';
 
 // ── Type Declarations ──────────────────────────────────────
 
@@ -17,6 +20,7 @@ declare global {
             getDeviceContext: () => Promise<DeviceContext>;
             submitTicket: (data: Record<string, unknown>) => Promise<SubmitResult>;
             getConfig: () => Promise<{ apiBaseUrl: string }>;
+            getLocale: () => Promise<string>;
             hideWindow: () => void;
             onMessage: (cb: (event: string, data: unknown) => void) => void;
         };
@@ -29,7 +33,18 @@ interface DeviceContext {
     osVersion: string;
     osPlatform: string;
     ipAddress: string;
+    macAddress: string | null;
     domain: string | null;
+    cpu: string;
+    arch: string;
+    totalMemoryGB: string;
+    freeMemoryGB: string;
+    diskTotal: string | null;
+    diskFree: string | null;
+    serialNumber: string | null;
+    manufacturer: string | null;
+    model: string | null;
+    uptimeFormatted: string;
     ninjaDeviceId: number | null;
     teamviewerId: string | null;
     teamviewerVersion: string | null;
@@ -49,16 +64,18 @@ interface SubmitResult {
     error?: string;
 }
 
-// ── Sub-categories ─────────────────────────────────────────
+// ── Sub-categories (localized) ─────────────────────────────
 
-const SUB_CATEGORIES: Record<string, string[]> = {
-    'Login & Access': ["Can't login", 'Password expired', 'Account locked', 'MFA / 2FA issue'],
-    'Email': ["Can't send", "Can't receive", 'Outlook crash', 'Missing emails', 'Calendar issue'],
-    'Printing': ['Printer offline', 'Print quality', 'Wrong printer', 'Scanner issue'],
-    'Network & Internet': ['No internet', 'Slow connection', 'VPN issues', 'WiFi problems'],
-    'Software': ["Won't open", 'Crashing', 'Need installation', 'Running slow', 'Update needed'],
-    'Hardware': ['Monitor', 'Keyboard / Mouse', 'Laptop', 'Docking station', 'Audio / Headset'],
-};
+function getSubCategories(t: Translations): Record<string, string[]> {
+    return {
+        'Login & Access': [t.subCantLogin, t.subPasswordExpired, t.subAccountLocked, t.subMfa],
+        'Email': [t.subCantSend, t.subCantReceive, t.subOutlookCrash, t.subMissingEmails, t.subCalendarIssue],
+        'Printing': [t.subPrinterOffline, t.subPrintQuality, t.subWrongPrinter, t.subScannerIssue],
+        'Network & Internet': [t.subNoInternet, t.subSlowConnection, t.subVpn, t.subWifi],
+        'Software': [t.subWontOpen, t.subCrashing, t.subNeedInstallation, t.subRunningSlow, t.subUpdateNeeded],
+        'Hardware': [t.subMonitor, t.subKeyboardMouse, t.subLaptop, t.subDockingStation, t.subAudioHeadset],
+    };
+}
 
 // ── DOM Elements ───────────────────────────────────────────
 
@@ -83,21 +100,38 @@ const statusDot = $<HTMLElement>('status-dot');
 const statusText = $<HTMLElement>('status-text');
 const statusDevice = $<HTMLElement>('status-device');
 
+// Tab elements
+const tabBar = $<HTMLElement>('tab-bar');
+const viewDevice = $<HTMLElement>('view-device');
+
 // State
 let deviceContext: DeviceContext | null = null;
+let currentLocale: Locale = 'en';
+let t: Translations = getTranslations('en');
 
 // ── Initialization ─────────────────────────────────────────
 
 async function init() {
+    // Detect locale from system
+    try {
+        const sysLocale = await window.atlasAPI.getLocale();
+        currentLocale = detectLocale(sysLocale);
+        t = getTranslations(currentLocale);
+        applyTranslations(t);
+    } catch (err) {
+        console.warn('Locale detection failed, using English:', err);
+    }
+
     // Load device context
     try {
         deviceContext = await window.atlasAPI.getDeviceContext();
         populateDeviceInfo(deviceContext);
+        populateDeviceTab(deviceContext);
         prefillUserFields(deviceContext);
-        updateStatus('connected', 'Connected', deviceContext.computerName);
+        updateStatus('connected', t.statusConnected, deviceContext.computerName);
     } catch (err) {
         console.error('Failed to load device context:', err);
-        updateStatus('limited', 'Limited', '—');
+        updateStatus('limited', t.statusLimited, '—');
     }
 
     // Check API connectivity
@@ -111,8 +145,93 @@ function populateDeviceInfo(ctx: DeviceContext) {
     $('ctx-ip').textContent = ctx.ipAddress;
     $('ctx-ninja').textContent = ctx.ninjaDeviceId
         ? String(ctx.ninjaDeviceId)
-        : 'Not found';
-    $('ctx-tv').textContent = ctx.teamviewerId || 'Not installed';
+        : t.notFound;
+    $('ctx-tv').textContent = ctx.teamviewerId || t.notInstalled;
+
+    // Add copy buttons to support tab device rows
+    initCopyButtons('#device-details .device-row', 'device-value', 'device-value-wrap');
+}
+
+function populateDeviceTab(ctx: DeviceContext) {
+    // Identity
+    $('di-computer').textContent = ctx.computerName;
+    $('di-user').textContent = ctx.loggedInUser;
+    $('di-domain').textContent = ctx.domain || 'N/A';
+    $('di-serial').textContent = ctx.serialNumber || t.unknown;
+    $('di-manufacturer').textContent = ctx.manufacturer || t.unknown;
+    $('di-model').textContent = ctx.model || t.unknown;
+
+    // System
+    $('di-os').textContent = ctx.osVersion;
+    $('di-platform').textContent = ctx.osPlatform;
+    $('di-arch').textContent = ctx.arch;
+    $('di-cpu').textContent = ctx.cpu;
+    $('di-ram').textContent = `${ctx.totalMemoryGB} GB / ${ctx.freeMemoryGB} GB free`;
+    $('di-disk').textContent =
+        ctx.diskTotal && ctx.diskFree
+            ? `${ctx.diskTotal} / ${ctx.diskFree} free`
+            : t.unknown;
+    $('di-uptime').textContent = ctx.uptimeFormatted;
+
+    // Network
+    $('di-ip').textContent = ctx.ipAddress;
+    $('di-mac').textContent = ctx.macAddress || t.unknown;
+
+    // Remote Support
+    $('di-ninja').textContent = ctx.ninjaDeviceId
+        ? String(ctx.ninjaDeviceId)
+        : t.notFound;
+    $('di-tvid').textContent = ctx.teamviewerId || t.notInstalled;
+    $('di-tvver').textContent = ctx.teamviewerVersion || 'N/A';
+
+    // Add copy buttons after populating values
+    initCopyButtons('#view-device .info-item', 'info-value', 'info-value-wrap');
+}
+
+/**
+ * Inject a copy button next to every value element inside the given container rows.
+ */
+function initCopyButtons(rowSelector: string, valueClass: string, wrapClass: string) {
+    const items = document.querySelectorAll(rowSelector);
+    items.forEach((item) => {
+        const valueEl = item.querySelector(`.${valueClass}`) as HTMLElement;
+        if (!valueEl || item.querySelector('.copy-btn')) return;
+
+        // Wrap value + button together
+        const wrap = document.createElement('div');
+        wrap.className = wrapClass;
+        valueEl.parentNode!.insertBefore(wrap, valueEl);
+        wrap.appendChild(valueEl);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.title = t.btnCopy;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>`;
+
+        btn.addEventListener('click', () => {
+            const text = valueEl.textContent?.trim() || '';
+            if (!text || text === '—') return;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>`;
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>`;
+                }, 1500);
+            });
+        });
+
+        wrap.appendChild(btn);
+    });
 }
 
 function prefillUserFields(ctx: DeviceContext) {
@@ -129,19 +248,41 @@ function prefillUserFields(ctx: DeviceContext) {
 }
 
 async function checkApiConnection() {
+    const device = deviceContext?.computerName || '—';
     try {
         const config = await window.atlasAPI.getConfig();
-        const response = await fetch(`${config.apiBaseUrl.replace('/api', '')}/health`, {
-            method: 'GET',
-            signal: AbortSignal.timeout(5000),
-        });
-        if (response.ok) {
-            updateStatus('connected', 'Connected', deviceContext?.computerName || '—');
+        const baseUrl = config.apiBaseUrl;
+
+        // Try the health endpoint on the API root
+        const healthUrl = baseUrl.replace(/\/api\/?$/, '/health');
+
+        try {
+            const response = await fetch(healthUrl, {
+                method: 'GET',
+                signal: AbortSignal.timeout(5000),
+            });
+            // Any HTTP response (even 401 from OIDC) means the server is reachable
+            if (response.status < 500) {
+                updateStatus('connected', t.statusConnected, device);
+                return;
+            }
+        } catch {
+            // API not reachable — that's okay for local/dev usage
+        }
+
+        // If device context loaded, widget is functional even without API
+        if (deviceContext) {
+            updateStatus('connected', t.statusReady, device);
         } else {
-            updateStatus('limited', 'Limited', deviceContext?.computerName || '—');
+            updateStatus('limited', t.statusLimited, device);
         }
     } catch {
-        updateStatus('offline', 'Offline', deviceContext?.computerName || '—');
+        // Config failed — still mark as ready if we have device context
+        if (deviceContext) {
+            updateStatus('connected', t.statusReady, device);
+        } else {
+            updateStatus('limited', t.statusLimited, device);
+        }
     }
 }
 
@@ -172,16 +313,39 @@ deviceToggle.addEventListener('click', () => {
     deviceToggle.classList.toggle('open', !isOpen);
 });
 
+// Tab switching
+tabBar.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.tab-btn') as HTMLElement | null;
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+
+    // Update active tab button
+    tabBar.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Show/hide views
+    if (tab === 'support') {
+        viewForm.style.display = 'block';
+        viewDevice.style.display = 'none';
+        viewSuccess.style.display = 'none';
+    } else if (tab === 'device') {
+        viewForm.style.display = 'none';
+        viewDevice.style.display = 'block';
+        viewSuccess.style.display = 'none';
+    }
+});
+
 // Category → Sub-category
 categorySelect.addEventListener('change', () => {
     const category = categorySelect.value;
-    const subs = SUB_CATEGORIES[category];
+    const subCategories = getSubCategories(t);
+    const subs = subCategories[category];
 
     if (subs && subs.length > 0) {
         subcategoryGroup.style.display = 'flex';
         subcategorySelect.innerHTML =
-            '<option value="" disabled selected>Select…</option>' +
-            subs.map((s) => `<option value="${s}">${s}</option>`).join('');
+            `<option value="" disabled selected>${t.placeholderSubcategory}</option>` +
+            subs.map((s: string) => `<option value="${s}">${s}</option>`).join('');
     } else {
         subcategoryGroup.style.display = 'none';
         subcategorySelect.value = '';
@@ -193,6 +357,10 @@ btnNewTicket.addEventListener('click', () => {
     resetForm();
     viewSuccess.style.display = 'none';
     viewForm.style.display = 'block';
+    viewDevice.style.display = 'none';
+    // Reset tab to Support
+    tabBar.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    tabBar.querySelector('[data-tab="support"]')?.classList.add('active');
 });
 
 // ── Form Submission ────────────────────────────────────────
@@ -248,11 +416,11 @@ form.addEventListener('submit', async (e) => {
             viewForm.style.display = 'none';
             viewSuccess.style.display = 'flex';
         } else {
-            showToast(result.error || 'Failed to submit ticket. Please try again.');
+            showToast(result.error || t.toastSubmitFailed);
         }
     } catch (err) {
         console.error('Submit error:', err);
-        showToast('Connection error. Please check your internet and try again.');
+        showToast(t.toastConnectionError);
     } finally {
         setLoading(false);
     }
@@ -279,7 +447,7 @@ function validateForm(): boolean {
     if (!description.value.trim()) { description.classList.add('error'); valid = false; }
 
     if (!valid) {
-        showToast('Please fill in all required fields.');
+        showToast(t.toastFillFields);
         // Focus first error
         const firstError = form.querySelector('.error') as HTMLElement;
         firstError?.focus();
@@ -301,12 +469,12 @@ function formatTicketBody(
         `Urgency: ${urgency.toUpperCase()}`,
         '',
         'Device Information:',
-        `  Computer: ${deviceContext?.computerName || 'Unknown'}`,
-        `  User: ${deviceContext?.loggedInUser || 'Unknown'}`,
-        `  OS: ${deviceContext?.osVersion || 'Unknown'}`,
-        `  IP: ${deviceContext?.ipAddress || 'Unknown'}`,
-        `  Ninja ID: ${deviceContext?.ninjaDeviceId ?? 'Not found'}`,
-        `  TeamViewer: ${deviceContext?.teamviewerId ?? 'Not installed'}`,
+        `  Computer: ${deviceContext?.computerName || t.unknown}`,
+        `  User: ${deviceContext?.loggedInUser || t.unknown}`,
+        `  OS: ${deviceContext?.osVersion || t.unknown}`,
+        `  IP: ${deviceContext?.ipAddress || t.unknown}`,
+        `  Ninja ID: ${deviceContext?.ninjaDeviceId ?? t.notFound}`,
+        `  TeamViewer: ${deviceContext?.teamviewerId ?? t.notInstalled}`,
         `  Domain: ${deviceContext?.domain ?? 'N/A'}`,
         '───────────────────────────────',
         'Submitted via ATLAS Widget v1.0.0',
@@ -352,6 +520,31 @@ function resetForm() {
     // Reset urgency to "normal"
     const normalRadio = form.querySelector('input[name="urgency"][value="normal"]') as HTMLInputElement;
     if (normalRadio) normalRadio.checked = true;
+}
+
+// ── i18n: Apply translations to the DOM ───────────────────
+
+function applyTranslations(tr: Translations) {
+    // Set lang attribute on <html>
+    document.documentElement.lang = currentLocale;
+
+    // Apply data-i18n text content
+    document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+        const key = el.dataset.i18n as keyof Translations;
+        if (tr[key]) el.textContent = tr[key] as string;
+    });
+
+    // Apply data-i18n-placeholder
+    document.querySelectorAll<HTMLElement>('[data-i18n-placeholder]').forEach((el) => {
+        const key = el.dataset.i18nPlaceholder as keyof Translations;
+        if (tr[key]) (el as HTMLInputElement | HTMLTextAreaElement).placeholder = tr[key] as string;
+    });
+
+    // Apply data-i18n-title
+    document.querySelectorAll<HTMLElement>('[data-i18n-title]').forEach((el) => {
+        const key = el.dataset.i18nTitle as keyof Translations;
+        if (tr[key]) el.title = tr[key] as string;
+    });
 }
 
 // ── Boot ───────────────────────────────────────────────────

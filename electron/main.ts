@@ -1,9 +1,9 @@
 /**
- * ATLAS Widget — Minimal Electron Main Process
+ * ATLAS Widget — Electron Main Process
  *
- * Phase 0: Tray icon + simple hello world popup.
- * The full implementation (form, device context, API) is in the other source files
- * and will be wired in once this is deployed and running.
+ * Tray icon + tabbed widget window with:
+ *   - Ticket submission form
+ *   - Device details tab (system info, TeamViewer, NinjaOne)
  */
 
 import {
@@ -13,11 +13,14 @@ import {
     Menu,
     nativeImage,
     screen,
+    ipcMain,
 } from 'electron';
 import path from 'path';
+import { collectDeviceContext } from './device-context';
+import { detectLocale, getTranslations } from './i18n';
 
-const WIDGET_WIDTH = 380;
-const WIDGET_HEIGHT = 300;
+const WIDGET_WIDTH = 420;
+const WIDGET_HEIGHT = 520;
 
 let tray: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -49,6 +52,8 @@ app.on('window-all-closed', () => {
 
 // ── Tray ───────────────────────────────────────────────────
 function createTray() {
+    const t = getTranslations(detectLocale(app.getLocale()));
+
     // Try to load icon from assets, fall back to a generated one
     const iconPath = path.join(__dirname, '..', 'assets', 'tray-icon.png');
     let icon: Electron.NativeImage;
@@ -67,18 +72,15 @@ function createTray() {
     }
 
     tray = new Tray(icon);
-    tray.setToolTip('ATLAS Support — Click for help');
+    tray.setToolTip(t.trayTooltip);
 
     tray.setContextMenu(
         Menu.buildFromTemplate([
-            { label: '📧  Open ATLAS Support', click: () => showWindow() },
+            { label: t.trayOpen, click: () => showWindow() },
             { type: 'separator' },
-            { label: '❌  Exit', click: () => app.exit(0) },
+            { label: t.trayExit, click: () => app.exit(0) },
         ]),
     );
-
-    // Left-click = show window
-    tray.on('click', () => showWindow());
 }
 
 function createFallbackIcon(): Electron.NativeImage {
@@ -111,13 +113,13 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js'),
         },
     });
 
-    // Load a simple inline HTML page
-    mainWindow.loadURL(
-        `data:text/html;charset=utf-8,${encodeURIComponent(HELLO_HTML)}`,
-    );
+    // Load the built renderer from dist/
+    const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+    mainWindow.loadFile(indexPath);
 
     mainWindow.on('close', (e) => {
         e.preventDefault();
@@ -129,6 +131,47 @@ function createWindow() {
     });
 }
 
+// ── IPC Handlers ───────────────────────────────────────────
+
+ipcMain.handle('get-device-context', () => {
+    return collectDeviceContext();
+});
+
+ipcMain.handle('get-config', () => {
+    return {
+        apiBaseUrl: process.env.ATLAS_API_URL || 'https://staging.alphoraholdings.com/api' || 'http://localhost:3000/api',
+    };
+});
+
+ipcMain.handle('get-locale', () => {
+    return app.getLocale();
+});
+
+ipcMain.handle('submit-ticket', async (_event, ticketData) => {
+    try {
+        const config = {
+            apiBaseUrl: process.env.ATLAS_API_URL || 'https://staging.alphoraholdings.com/api' || 'http://localhost:3000/api',
+        };
+        const response = await fetch(`${config.apiBaseUrl}/rmm/widget/tickets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ticketData),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            return { success: true, data };
+        }
+        return { success: false, error: data.message || 'Submission failed' };
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        return { success: false, error: message };
+    }
+});
+
+ipcMain.on('hide-window', () => {
+    mainWindow?.hide();
+});
+
 function showWindow() {
     if (!mainWindow) return;
     const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize;
@@ -136,92 +179,3 @@ function showWindow() {
     mainWindow.show();
     mainWindow.focus();
 }
-
-// ── Inline HTML ────────────────────────────────────────────
-const HELLO_HTML = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8"/>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #0f172a;
-    color: #f1f5f9;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    -webkit-app-region: drag;
-    user-select: none;
-  }
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 18px;
-    border-bottom: 1px solid #334155;
-  }
-  .logo {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 15px; color: #fff;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
-  }
-  .title { font-weight: 600; font-size: 14px; }
-  .content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 20px;
-    text-align: center;
-  }
-  .emoji { font-size: 48px; animation: wave 2s ease-in-out infinite; transform-origin: 70% 70%; }
-  @keyframes wave {
-    0%,60%,100%{transform:rotate(0)}
-    10%{transform:rotate(14deg)}
-    20%{transform:rotate(-8deg)}
-    30%{transform:rotate(14deg)}
-    40%{transform:rotate(-4deg)}
-    50%{transform:rotate(10deg)}
-  }
-  h1 { font-size: 22px; font-weight: 700; }
-  p { color: #94a3b8; font-size: 13px; line-height: 1.5; }
-  .badge {
-    margin-top: 8px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: rgba(59,130,246,0.1);
-    border: 1px solid rgba(59,130,246,0.3);
-    color: #60a5fa;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
-  .footer {
-    padding: 10px 18px;
-    border-top: 1px solid #334155;
-    font-size: 11px;
-    color: #64748b;
-    text-align: center;
-  }
-</style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo">A</div>
-    <span class="title">ATLAS Support</span>
-  </div>
-  <div class="content">
-    <div class="emoji">👋</div>
-    <h1>Hello from ATLAS!</h1>
-    <p>The support widget is running.<br/>Ticket form coming soon.</p>
-    <div class="badge">v1.0.0 — CONNECTED</div>
-  </div>
-  <div class="footer">Click outside to close · Right-click tray for menu</div>
-</body>
-</html>`;

@@ -25,6 +25,11 @@ contextBridge.exposeInMainWorld('atlasAPI', {
     getConfig: () => ipcRenderer.invoke('get-config'),
 
     /**
+     * Get the system locale (e.g. 'en-US', 'de-DE').
+     */
+    getLocale: () => ipcRenderer.invoke('get-locale'),
+
+    /**
      * Close the widget window (minimize to tray).
      */
     hideWindow: () => ipcRenderer.send('hide-window'),

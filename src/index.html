@@ -17,102 +17,120 @@
         <div class="logo-icon">A</div>
         <span class="logo-text">ATLAS Support</span>
       </div>
-      <button class="titlebar-close" id="btn-close" title="Close">
+      <button class="titlebar-close" id="btn-close" title="Close" data-i18n-title="closeTitle">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
     </header>
 
+    <!-- ── Tab Navigation ── -->
+    <nav class="tab-bar" id="tab-bar">
+      <button class="tab-btn active" data-tab="support">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span data-i18n="tabSupport">Support</span>
+      </button>
+      <button class="tab-btn" data-tab="device">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <span data-i18n="tabDevice">Device Info</span>
+      </button>
+    </nav>
+
     <!-- ── Main View (Form) ── -->
     <main class="main-content" id="view-form">
       <!-- Welcome -->
       <div class="welcome-section">
         <h1 class="welcome-heading">
-          <span class="wave">👋</span> Need help?
+          <span class="wave">👋</span> <span data-i18n="welcomeHeading">Need help?</span>
         </h1>
-        <p class="welcome-sub">Submit a ticket and we'll get right on it.</p>
+        <p class="welcome-sub" data-i18n="welcomeSub">Submit a ticket and we'll get right on it.</p>
       </div>
 
       <!-- Ticket Form -->
       <form id="ticket-form" class="ticket-form" novalidate>
         <!-- Name -->
         <div class="form-group">
-          <label for="field-name" class="form-label">Your Name</label>
-          <input type="text" id="field-name" class="form-input" placeholder="John Doe" required />
+          <label for="field-name" class="form-label" data-i18n="labelName">Your Name</label>
+          <input type="text" id="field-name" class="form-input" placeholder="John Doe" data-i18n-placeholder="placeholderName" required />
         </div>
 
         <!-- Email -->
         <div class="form-group">
-          <label for="field-email" class="form-label">Your Email</label>
-          <input type="email" id="field-email" class="form-input" placeholder="john@company.com" required />
+          <label for="field-email" class="form-label" data-i18n="labelEmail">Your Email</label>
+          <input type="email" id="field-email" class="form-input" placeholder="john@company.com" data-i18n-placeholder="placeholderEmail" required />
         </div>
 
         <!-- Category -->
         <div class="form-group">
-          <label for="field-category" class="form-label">Issue Category</label>
+          <label for="field-category" class="form-label" data-i18n="labelCategory">Issue Category</label>
           <select id="field-category" class="form-input form-select" required>
-            <option value="" disabled selected>Select a category…</option>
-            <option value="Login & Access">🔐  Login & Access</option>
-            <option value="Email">📧  Email</option>
-            <option value="Printing">🖨️  Printing</option>
-            <option value="Network & Internet">🌐  Network & Internet</option>
-            <option value="Software">💻  Software</option>
-            <option value="Hardware">🖥️  Hardware</option>
-            <option value="Other">❓  Other</option>
+            <option value="" disabled selected data-i18n="placeholderCategory">Select a category…</option>
+            <option value="Login & Access" data-i18n="catLoginAccess">🔐  Login & Access</option>
+            <option value="Email" data-i18n="catEmail">📧  Email</option>
+            <option value="Printing" data-i18n="catPrinting">🖨️  Printing</option>
+            <option value="Network & Internet" data-i18n="catNetwork">🌐  Network & Internet</option>
+            <option value="Software" data-i18n="catSoftware">💻  Software</option>
+            <option value="Hardware" data-i18n="catHardware">🖥️  Hardware</option>
+            <option value="Other" data-i18n="catOther">❓  Other</option>
           </select>
         </div>
 
         <!-- Sub-category (dynamic) -->
         <div class="form-group" id="subcategory-group" style="display:none;">
-          <label for="field-subcategory" class="form-label">Specific Issue</label>
+          <label for="field-subcategory" class="form-label" data-i18n="labelSubcategory">Specific Issue</label>
           <select id="field-subcategory" class="form-input form-select">
-            <option value="" disabled selected>Select…</option>
+            <option value="" disabled selected data-i18n="placeholderSubcategory">Select…</option>
           </select>
         </div>
 
         <!-- Summary -->
         <div class="form-group">
-          <label for="field-summary" class="form-label">Issue Summary</label>
-          <input type="text" id="field-summary" class="form-input" placeholder="Brief description of your issue" required maxlength="200" />
+          <label for="field-summary" class="form-label" data-i18n="labelSummary">Issue Summary</label>
+          <input type="text" id="field-summary" class="form-input" placeholder="Brief description of your issue" data-i18n-placeholder="placeholderSummary" required maxlength="200" />
         </div>
 
         <!-- Description -->
         <div class="form-group">
-          <label for="field-description" class="form-label">Details</label>
-          <textarea id="field-description" class="form-input form-textarea" placeholder="Please describe what's happening, when it started, and what you've tried…" required rows="4"></textarea>
+          <label for="field-description" class="form-label" data-i18n="labelDetails">Details</label>
+          <textarea id="field-description" class="form-input form-textarea" placeholder="Please describe what's happening, when it started, and what you've tried…" data-i18n-placeholder="placeholderDetails" required rows="4"></textarea>
         </div>
 
         <!-- Urgency -->
         <div class="form-group">
-          <label class="form-label">Urgency</label>
+          <label class="form-label" data-i18n="labelUrgency">Urgency</label>
           <div class="urgency-grid">
             <label class="urgency-option">
               <input type="radio" name="urgency" value="low" />
               <span class="urgency-card">
                 <span class="urgency-dot dot-low"></span>
-                Low
+                <span data-i18n="urgencyLow">Low</span>
               </span>
             </label>
             <label class="urgency-option">
               <input type="radio" name="urgency" value="normal" checked />
               <span class="urgency-card">
                 <span class="urgency-dot dot-normal"></span>
-                Normal
+                <span data-i18n="urgencyNormal">Normal</span>
               </span>
             </label>
             <label class="urgency-option">
               <input type="radio" name="urgency" value="high" />
               <span class="urgency-card">
                 <span class="urgency-dot dot-high"></span>
-                High
+                <span data-i18n="urgencyHigh">High</span>
               </span>
             </label>
             <label class="urgency-option">
               <input type="radio" name="urgency" value="critical" />
               <span class="urgency-card">
                 <span class="urgency-dot dot-critical"></span>
-                Critical
+                <span data-i18n="urgencyCritical">Critical</span>
               </span>
             </label>
           </div>
@@ -121,34 +139,34 @@
         <!-- Device Info (read-only) -->
         <div class="device-info-section" id="device-info">
           <button type="button" class="device-toggle" id="device-toggle">
-            <span>📱 Device Information</span>
+            <span data-i18n="deviceInfoToggle">📱 Device Information</span>
             <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
           </button>
           <div class="device-details" id="device-details" style="display:none;">
             <div class="device-row">
-              <span class="device-label">Computer</span>
+              <span class="device-label" data-i18n="deviceComputer">Computer</span>
               <span class="device-value" id="ctx-computer">—</span>
             </div>
             <div class="device-row">
-              <span class="device-label">User</span>
+              <span class="device-label" data-i18n="deviceUser">User</span>
               <span class="device-value" id="ctx-user">—</span>
             </div>
             <div class="device-row">
-              <span class="device-label">OS</span>
+              <span class="device-label" data-i18n="deviceOs">OS</span>
               <span class="device-value" id="ctx-os">—</span>
             </div>
             <div class="device-row">
-              <span class="device-label">IP Address</span>
+              <span class="device-label" data-i18n="deviceIp">IP Address</span>
               <span class="device-value" id="ctx-ip">—</span>
             </div>
             <div class="device-row">
-              <span class="device-label">Ninja ID</span>
+              <span class="device-label" data-i18n="deviceNinja">Ninja ID</span>
               <span class="device-value" id="ctx-ninja">—</span>
             </div>
             <div class="device-row">
-              <span class="device-label">TeamViewer</span>
+              <span class="device-label" data-i18n="deviceTeamviewer">TeamViewer</span>
               <span class="device-value" id="ctx-tv">—</span>
             </div>
           </div>
@@ -156,10 +174,10 @@
 
         <!-- Submit -->
         <button type="submit" class="btn-submit" id="btn-submit">
-          <span class="btn-text">Send Ticket</span>
+          <span class="btn-text" data-i18n="btnSend">Send Ticket</span>
           <span class="btn-loader" style="display:none;">
             <span class="spinner"></span>
-            Sending…
+            <span data-i18n="btnSending">Sending…</span>
           </span>
         </button>
       </form>
@@ -169,24 +187,155 @@
     <main class="main-content success-view" id="view-success" style="display:none;">
       <div class="success-content">
         <div class="success-icon">✅</div>
-        <h2 class="success-heading">Ticket Submitted!</h2>
-        <p class="success-sub">We've received your request and will get back to you shortly.</p>
+        <h2 class="success-heading" data-i18n="successHeading">Ticket Submitted!</h2>
+        <p class="success-sub" data-i18n="successSub">We've received your request and will get back to you shortly.</p>
         <div class="success-ref" id="success-ref"></div>
-        <button class="btn-submit" id="btn-new-ticket">Submit Another Ticket</button>
+        <button class="btn-submit" id="btn-new-ticket" data-i18n="btnSubmitAnother">Submit Another Ticket</button>
+      </div>
+    </main>
+
+    <!-- ── Device Info View ── -->
+    <main class="main-content" id="view-device" style="display:none;">
+      <!-- Identity Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <span data-i18n="sectionIdentity">Identity</span>
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label" data-i18n="diComputerName">Computer Name</span>
+            <span class="info-value" id="di-computer">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diLoggedInUser">Logged-in User</span>
+            <span class="info-value" id="di-user">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diDomain">Domain</span>
+            <span class="info-value" id="di-domain">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diSerialNumber">Serial Number</span>
+            <span class="info-value" id="di-serial">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diManufacturer">Manufacturer</span>
+            <span class="info-value" id="di-manufacturer">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diModel">Model</span>
+            <span class="info-value" id="di-model">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span data-i18n="sectionSystem">System</span>
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label" data-i18n="diOperatingSystem">Operating System</span>
+            <span class="info-value" id="di-os">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diPlatform">Platform</span>
+            <span class="info-value" id="di-platform">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diArchitecture">Architecture</span>
+            <span class="info-value" id="di-arch">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diCpu">CPU</span>
+            <span class="info-value" id="di-cpu">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diRam">RAM (Total / Free)</span>
+            <span class="info-value" id="di-ram">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diDisk">Disk (Total / Free)</span>
+            <span class="info-value" id="di-disk">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diUptime">Uptime</span>
+            <span class="info-value" id="di-uptime">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <line x1="12" y1="20" x2="12.01" y2="20"/>
+          </svg>
+          <span data-i18n="sectionNetwork">Network</span>
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label" data-i18n="diIpAddress">IP Address</span>
+            <span class="info-value" id="di-ip">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diMacAddress">MAC Address</span>
+            <span class="info-value" id="di-mac">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remote Support Section -->
+      <div class="info-section">
+        <h3 class="info-section-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          <span data-i18n="sectionRemoteSupport">Remote Support</span>
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label" data-i18n="diNinjaDeviceId">NinjaOne Device ID</span>
+            <span class="info-value" id="di-ninja">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diTeamviewerId">TeamViewer ID</span>
+            <span class="info-value" id="di-tvid">—</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="diTeamviewerVersion">TeamViewer Version</span>
+            <span class="info-value" id="di-tvver">—</span>
+          </div>
+        </div>
       </div>
     </main>
 
     <!-- ── Error Toast ── -->
     <div class="toast toast-error" id="toast-error" style="display:none;">
       <span class="toast-icon">⚠️</span>
-      <span class="toast-message" id="toast-message">Something went wrong</span>
+      <span class="toast-message" id="toast-message" data-i18n="toastDefault">Something went wrong</span>
     </div>
 
     <!-- ── Status Bar ── -->
     <footer class="statusbar">
       <div class="status-indicator">
         <span class="status-dot" id="status-dot"></span>
-        <span class="status-text" id="status-text">Checking…</span>
+        <span class="status-text" id="status-text" data-i18n="statusChecking">Checking…</span>
       </div>
       <span class="status-device" id="status-device">—</span>
     </footer>

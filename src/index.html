@@ -7,338 +7,558 @@
   <link rel="stylesheet" href="./style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div id="app">
-    <!-- ── Title Bar ── -->
-    <header class="titlebar" id="titlebar">
-      <div class="titlebar-logo">
-        <div class="logo-icon">A</div>
-        <span class="logo-text">ATLAS Support</span>
-      </div>
-      <button class="titlebar-close" id="btn-close" title="Close" data-i18n-title="closeTitle">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </header>
 
-    <!-- ── Tab Navigation ── -->
-    <nav class="tab-bar" id="tab-bar">
-      <button class="tab-btn active" data-tab="support">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        <span data-i18n="tabSupport">Support</span>
-      </button>
-      <button class="tab-btn" data-tab="device">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-        </svg>
-        <span data-i18n="tabDevice">Device Info</span>
-      </button>
-    </nav>
-
-    <!-- ── Main View (Form) ── -->
-    <main class="main-content" id="view-form">
-      <!-- Welcome -->
-      <div class="welcome-section">
-        <h1 class="welcome-heading">
-          <span class="wave">👋</span> <span data-i18n="welcomeHeading">Need help?</span>
-        </h1>
-        <p class="welcome-sub" data-i18n="welcomeSub">Submit a ticket and we'll get right on it.</p>
-      </div>
-
-      <!-- Ticket Form -->
-      <form id="ticket-form" class="ticket-form" novalidate>
-        <!-- Name -->
-        <div class="form-group">
-          <label for="field-name" class="form-label" data-i18n="labelName">Your Name</label>
-          <input type="text" id="field-name" class="form-input" placeholder="John Doe" data-i18n-placeholder="placeholderName" required />
+    <!-- ════════════════════════════════════════════════════════
+         VIEW: MAIN  —  Welcome + Action Buttons
+         ════════════════════════════════════════════════════════ -->
+    <div id="view-main" class="view active">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <div class="header-logo">A</div>
+          <div>
+            <h1 class="header-title">ATLAS Support</h1>
+            <p class="header-sub">IT-Support</p>
+          </div>
         </div>
+        <button class="btn-icon" id="btn-close" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <!-- Welcome -->
+      <div class="welcome">
+        <h2 class="welcome-title" id="welcome-title">Hello! 👋</h2>
+        <p class="welcome-sub" data-i18n="welcomeSub">How can we help you?</p>
+      </div>
+
+      <!-- Action Cards -->
+      <div class="action-list">
+        <!-- WhatsApp -->
+        <button class="action-card" id="action-whatsapp">
+          <div class="action-icon icon-green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="action-text">
+            <h3 data-i18n="actionWhatsapp">WhatsApp Support <span class="badge badge-green" data-i18n="badgeFastest">Fastest</span></h3>
+            <p data-i18n="actionWhatsappSub">Scan QR code and start chatting</p>
+          </div>
+          <svg class="action-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
 
         <!-- Email -->
-        <div class="form-group">
-          <label for="field-email" class="form-label" data-i18n="labelEmail">Your Email</label>
-          <input type="email" id="field-email" class="form-input" placeholder="john@company.com" data-i18n-placeholder="placeholderEmail" required />
-        </div>
+        <button class="action-card" id="action-email">
+          <div class="action-icon icon-white">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+          <div class="action-text">
+            <h3 data-i18n="actionEmail">Email Support</h3>
+            <p data-i18n="actionEmailSub">Create a detailed ticket</p>
+          </div>
+          <svg class="action-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
 
-        <!-- Category -->
-        <div class="form-group">
-          <label for="field-category" class="form-label" data-i18n="labelCategory">Issue Category</label>
-          <select id="field-category" class="form-input form-select" required>
-            <option value="" disabled selected data-i18n="placeholderCategory">Select a category…</option>
-            <option value="Login & Access" data-i18n="catLoginAccess">🔐  Login & Access</option>
-            <option value="Email" data-i18n="catEmail">📧  Email</option>
-            <option value="Printing" data-i18n="catPrinting">🖨️  Printing</option>
-            <option value="Network & Internet" data-i18n="catNetwork">🌐  Network & Internet</option>
-            <option value="Software" data-i18n="catSoftware">💻  Software</option>
-            <option value="Hardware" data-i18n="catHardware">🖥️  Hardware</option>
-            <option value="Other" data-i18n="catOther">❓  Other</option>
-          </select>
-        </div>
+        <!-- Self-Diagnose -->
+        <button class="action-card action-card-highlight" id="action-diagnose">
+          <div class="action-icon icon-purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/><path d="M12 8v4l2 2"/></svg>
+          </div>
+          <div class="action-text">
+            <h3 data-i18n="actionDiagnose">Self-Diagnose <span class="badge badge-purple" data-i18n="badgeNew">New</span></h3>
+            <p data-i18n="actionDiagnoseSub">Fix problems with guided help</p>
+          </div>
+          <svg class="action-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
 
-        <!-- Sub-category (dynamic) -->
-        <div class="form-group" id="subcategory-group" style="display:none;">
-          <label for="field-subcategory" class="form-label" data-i18n="labelSubcategory">Specific Issue</label>
-          <select id="field-subcategory" class="form-input form-select">
-            <option value="" disabled selected data-i18n="placeholderSubcategory">Select…</option>
-          </select>
-        </div>
-
-        <!-- Summary -->
-        <div class="form-group">
-          <label for="field-summary" class="form-label" data-i18n="labelSummary">Issue Summary</label>
-          <input type="text" id="field-summary" class="form-input" placeholder="Brief description of your issue" data-i18n-placeholder="placeholderSummary" required maxlength="200" />
-        </div>
-
-        <!-- Description -->
-        <div class="form-group">
-          <label for="field-description" class="form-label" data-i18n="labelDetails">Details</label>
-          <textarea id="field-description" class="form-input form-textarea" placeholder="Please describe what's happening, when it started, and what you've tried…" data-i18n-placeholder="placeholderDetails" required rows="4"></textarea>
-        </div>
-
-        <!-- Urgency -->
-        <div class="form-group">
-          <label class="form-label" data-i18n="labelUrgency">Urgency</label>
-          <div class="urgency-grid">
-            <label class="urgency-option">
-              <input type="radio" name="urgency" value="low" />
-              <span class="urgency-card">
-                <span class="urgency-dot dot-low"></span>
-                <span data-i18n="urgencyLow">Low</span>
-              </span>
-            </label>
-            <label class="urgency-option">
-              <input type="radio" name="urgency" value="normal" checked />
-              <span class="urgency-card">
-                <span class="urgency-dot dot-normal"></span>
-                <span data-i18n="urgencyNormal">Normal</span>
-              </span>
-            </label>
-            <label class="urgency-option">
-              <input type="radio" name="urgency" value="high" />
-              <span class="urgency-card">
-                <span class="urgency-dot dot-high"></span>
-                <span data-i18n="urgencyHigh">High</span>
-              </span>
-            </label>
-            <label class="urgency-option">
-              <input type="radio" name="urgency" value="critical" />
-              <span class="urgency-card">
-                <span class="urgency-dot dot-critical"></span>
-                <span data-i18n="urgencyCritical">Critical</span>
-              </span>
-            </label>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <p class="section-label" data-i18n="commonIssues">Common Issues</p>
+          <div class="quick-grid">
+            <button class="quick-btn" data-category="Printer">
+              <span class="quick-emoji">🖨️</span>
+              <span class="quick-label" data-i18n="qaPrinter">Printer</span>
+            </button>
+            <button class="quick-btn" data-category="Password">
+              <span class="quick-emoji">🔐</span>
+              <span class="quick-label" data-i18n="qaPassword">Password</span>
+            </button>
+            <button class="quick-btn" data-category="Internet">
+              <span class="quick-emoji">🌐</span>
+              <span class="quick-label" data-i18n="qaInternet">Internet</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        <!-- Device Info (read-only) -->
-        <div class="device-info-section" id="device-info">
-          <button type="button" class="device-toggle" id="device-toggle">
-            <span data-i18n="deviceInfoToggle">📱 Device Information</span>
-            <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-left">
+          <div class="status-dot-live" id="main-status-dot"></div>
+          <span class="footer-text" id="main-status-text" data-i18n="connected">Connected</span>
+          <span class="footer-sep">|</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="footer-device" id="main-status-device">—</span>
+        </div>
+        <button class="btn-icon btn-icon-sm" id="action-settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </footer>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         VIEW: QR  —  WhatsApp QR Code
+         ════════════════════════════════════════════════════════ -->
+    <div id="view-qr" class="view">
+      <header class="header header-green">
+        <button class="btn-back" id="qr-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="back">Back</span>
+        </button>
+        <button class="btn-icon" id="qr-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="header-center">
+        <h1 class="header-title" data-i18n="qrTitle">WhatsApp Support</h1>
+        <p class="header-sub-accent header-sub-green" data-i18n="qrSub">Scan with your phone</p>
+      </div>
+
+      <!-- Category Pills -->
+      <div class="pills-section">
+        <p class="section-label-sm" data-i18n="qrCatLabel">What is it about? (optional)</p>
+        <div class="pills" id="qr-pills">
+          <button class="pill" data-cat="Login">🔐 Login</button>
+          <button class="pill" data-cat="Email">📧 Email</button>
+          <button class="pill" data-cat="Printer">🖨️ <span data-i18n="qaPrinter">Printer</span></button>
+          <button class="pill" data-cat="Network">🌐 <span data-i18n="qaNetwork">Network</span></button>
+          <button class="pill" data-cat="Software">💻 Software</button>
+          <button class="pill" data-cat="Other">❓ <span data-i18n="qaOther">Other</span></button>
+        </div>
+      </div>
+
+      <!-- QR Code Placeholder -->
+      <div class="qr-area">
+        <div class="qr-frame">
+          <div class="qr-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
             </svg>
-          </button>
-          <div class="device-details" id="device-details" style="display:none;">
-            <div class="device-row">
-              <span class="device-label" data-i18n="deviceComputer">Computer</span>
-              <span class="device-value" id="ctx-computer">—</span>
-            </div>
-            <div class="device-row">
-              <span class="device-label" data-i18n="deviceUser">User</span>
-              <span class="device-value" id="ctx-user">—</span>
-            </div>
-            <div class="device-row">
-              <span class="device-label" data-i18n="deviceOs">OS</span>
-              <span class="device-value" id="ctx-os">—</span>
-            </div>
-            <div class="device-row">
-              <span class="device-label" data-i18n="deviceIp">IP Address</span>
-              <span class="device-value" id="ctx-ip">—</span>
-            </div>
-            <div class="device-row">
-              <span class="device-label" data-i18n="deviceNinja">Ninja ID</span>
-              <span class="device-value" id="ctx-ninja">—</span>
-            </div>
-            <div class="device-row">
-              <span class="device-label" data-i18n="deviceTeamviewer">TeamViewer</span>
-              <span class="device-value" id="ctx-tv">—</span>
-            </div>
+            <p>QR Code</p>
+          </div>
+          <div class="qr-center-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+        </div>
+        <p class="qr-hint" data-i18n="qrHint">Point camera at the QR code</p>
+        <p class="qr-hint-sub" data-i18n="qrHintSub">WhatsApp will open automatically</p>
+        <div class="qr-timer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span data-i18n="qrTimer">Valid for 15 minutes</span>
+        </div>
+      </div>
+
+      <!-- Device Info Preview -->
+      <div class="qr-device-info">
+        <p class="section-label-sm" data-i18n="qrInfoSent">This info will be sent along:</p>
+        <div class="mono-box">
+          <div>📍 <span data-i18n="deviceLabel">Device</span>: <span id="qr-device">—</span></div>
+          <div>🔑 Ninja ID: <span id="qr-ninja">—</span></div>
+          <div>🖥️ TeamViewer: <span id="qr-tv">—</span></div>
+          <div id="qr-cat-line" style="display:none;">📋 <span data-i18n="categoryLabel">Category</span>: <span id="qr-cat-value"></span></div>
+        </div>
+      </div>
+
+      <!-- Copy fallback -->
+      <div class="qr-copy-bar">
+        <button class="btn-copy-message" id="btn-copy-qr">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span data-i18n="qrCopy">Can't scan? Copy message</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         VIEW: EMAIL  —  Ticket Form
+         ════════════════════════════════════════════════════════ -->
+    <div id="view-email" class="view">
+      <header class="header">
+        <button class="btn-back" id="email-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="back">Back</span>
+        </button>
+        <button class="btn-icon" id="email-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="header-center">
+        <h1 class="header-title" data-i18n="emailTitle">Email Support</h1>
+        <p class="header-sub" data-i18n="emailSub">We'll get back to you ASAP</p>
+      </div>
+
+      <!-- Form -->
+      <div class="form-scroll">
+        <!-- Pre-filled user card -->
+        <div class="user-card">
+          <div class="user-avatar" id="user-avatar">—</div>
+          <div>
+            <p class="user-name" id="user-name">—</p>
+            <p class="user-email" id="user-email">—</p>
           </div>
         </div>
 
-        <!-- Submit -->
-        <button type="submit" class="btn-submit" id="btn-submit">
-          <span class="btn-text" data-i18n="btnSend">Send Ticket</span>
+        <form id="ticket-form" class="ticket-form" novalidate>
+          <!-- Category -->
+          <div class="form-group">
+            <label for="field-category" class="form-label" data-i18n="category">Category <span class="required">*</span></label>
+            <select id="field-category" class="form-input form-select" required>
+              <option value="" disabled selected data-i18n="selectCategory">Select a category…</option>
+              <option value="Login & Access">🔐  Login & Access</option>
+              <option value="Email">📧  Email</option>
+              <option value="Printing">🖨️  Printing</option>
+              <option value="Network & Internet">🌐  Network & Internet</option>
+              <option value="Software">💻  Software</option>
+              <option value="Hardware">🖥️  Hardware</option>
+              <option value="Other">❓  Other</option>
+            </select>
+          </div>
+
+          <!-- Sub-category (dynamic) -->
+          <div class="form-group" id="subcategory-group" style="display:none;">
+            <label for="field-subcategory" class="form-label" data-i18n="subcategory">Specific Issue</label>
+            <select id="field-subcategory" class="form-input form-select">
+              <option value="" disabled selected data-i18n="selectSubcategory">Select…</option>
+            </select>
+          </div>
+
+          <!-- Summary -->
+          <div class="form-group">
+            <label for="field-summary" class="form-label" data-i18n="summary">Summary <span class="required">*</span></label>
+            <input type="text" id="field-summary" class="form-input" data-i18n-placeholder="summaryPlaceholder" placeholder="e.g. Printer is not printing" required maxlength="200" />
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="field-description" class="form-label" data-i18n="description">Description <span class="required">*</span></label>
+            <textarea id="field-description" class="form-input form-textarea" data-i18n-placeholder="descriptionPlaceholder" placeholder="Please describe the problem in more detail…" required rows="3"></textarea>
+          </div>
+
+          <!-- Urgency -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="urgency">Urgency</label>
+            <div class="urgency-row">
+              <button type="button" class="urgency-pill" data-urgency="low" data-i18n="urgLow">Low</button>
+              <button type="button" class="urgency-pill active" data-urgency="normal" data-i18n="urgNormal">Normal</button>
+              <button type="button" class="urgency-pill" data-urgency="high" data-i18n="urgHigh">High</button>
+              <button type="button" class="urgency-pill" data-urgency="critical" data-i18n="urgCritical">Critical</button>
+            </div>
+            <input type="hidden" id="field-urgency" value="normal" />
+          </div>
+
+          <!-- Screenshot placeholder -->
+          <div class="form-group">
+            <label class="form-label" data-i18n="screenshotLabel">Screenshot (optional)</label>
+            <button type="button" class="screenshot-btn" id="btn-screenshot">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span data-i18n="screenshotBtn">Click to take a screenshot</span>
+            </button>
+          </div>
+
+          <!-- Device Info compact -->
+          <div class="device-compact">
+            <div class="device-compact-header">
+              <span class="section-label-sm" data-i18n="deviceInfo">Device Information</span>
+              <span class="section-label-sm" style="opacity:0.5" data-i18n="autoDetected">Auto-detected</span>
+            </div>
+            <div class="device-compact-grid">
+              <div class="dci">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span id="email-device">—</span>
+              </div>
+              <div class="dci">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span id="email-ninja">—</span>
+              </div>
+              <div class="dci">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <span id="email-tv">—</span>
+              </div>
+              <div class="dci">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                <span id="email-ip">—</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-bar">
+        <button type="button" class="btn-submit-new" id="btn-submit">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span class="btn-text" data-i18n="sendTicket">Send Ticket</span>
           <span class="btn-loader" style="display:none;">
             <span class="spinner"></span>
-            <span data-i18n="btnSending">Sending…</span>
+            <span data-i18n="sending">Sending…</span>
           </span>
         </button>
-      </form>
-    </main>
+      </div>
+    </div>
 
-    <!-- ── Success View ── -->
-    <main class="main-content success-view" id="view-success" style="display:none;">
-      <div class="success-content">
-        <div class="success-icon">✅</div>
-        <h2 class="success-heading" data-i18n="successHeading">Ticket Submitted!</h2>
-        <p class="success-sub" data-i18n="successSub">We've received your request and will get back to you shortly.</p>
+    <!-- ════════════════════════════════════════════════════════
+         VIEW: EMAIL SUCCESS
+         ════════════════════════════════════════════════════════ -->
+    <div id="view-email-success" class="view">
+      <header class="header">
+        <div></div>
+        <button class="btn-icon" id="email-success-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="success-body">
+        <div class="success-icon-big">✅</div>
+        <h2 class="success-h" data-i18n="ticketSubmitted">Ticket Submitted!</h2>
+        <p class="success-p" data-i18n="ticketSubmittedSub">We've received your request and will get back to you shortly.</p>
         <div class="success-ref" id="success-ref"></div>
-        <button class="btn-submit" id="btn-new-ticket" data-i18n="btnSubmitAnother">Submit Another Ticket</button>
+        <button class="btn-submit-new" id="btn-new-ticket" data-i18n="submitAnother">Submit Another Ticket</button>
+        <button class="btn-ghost" id="btn-back-home" data-i18n="backToHome">Back to Home</button>
       </div>
-    </main>
+    </div>
 
-    <!-- ── Device Info View ── -->
-    <main class="main-content" id="view-device" style="display:none;">
-      <!-- Identity Section -->
-      <div class="info-section">
-        <h3 class="info-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-          <span data-i18n="sectionIdentity">Identity</span>
-        </h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label" data-i18n="diComputerName">Computer Name</span>
-            <span class="info-value" id="di-computer">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diLoggedInUser">Logged-in User</span>
-            <span class="info-value" id="di-user">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diDomain">Domain</span>
-            <span class="info-value" id="di-domain">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diSerialNumber">Serial Number</span>
-            <span class="info-value" id="di-serial">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diManufacturer">Manufacturer</span>
-            <span class="info-value" id="di-manufacturer">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diModel">Model</span>
-            <span class="info-value" id="di-model">—</span>
-          </div>
+    <!-- ════════════════════════════════════════════════════════
+         VIEW: DIAGNOSE  —  Self-Diagnose Wizard
+         ════════════════════════════════════════════════════════ -->
+    <div id="view-diagnose" class="view">
+      <header class="header header-purple">
+        <button class="btn-back" id="diagnose-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="back">Back</span>
+        </button>
+        <button class="btn-icon" id="diagnose-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="header-center">
+        <h1 class="header-title" data-i18n="diagnoseTitle">Self-Diagnose</h1>
+        <p class="header-sub-accent header-sub-purple"><span data-i18n="step">Step</span> <span id="diag-step-num">1</span> <span data-i18n="of">of</span> <span id="diag-step-total">4</span></p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" id="diag-progress" style="width:25%"></div>
         </div>
       </div>
 
-      <!-- System Section -->
-      <div class="info-section">
-        <h3 class="info-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
-          <span data-i18n="sectionSystem">System</span>
-        </h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label" data-i18n="diOperatingSystem">Operating System</span>
-            <span class="info-value" id="di-os">—</span>
+      <!-- Step content container -->
+      <div class="diag-body" id="diag-body">
+        <!-- Step 1: Category Selection (default visible) -->
+        <div class="diag-step active" id="diag-step-1">
+          <div class="diag-heading">
+            <h2 data-i18n="diagWhatsWrong">What's the problem?</h2>
+            <p data-i18n="diagSelectCat">Select a category</p>
           </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diPlatform">Platform</span>
-            <span class="info-value" id="di-platform">—</span>
+          <div class="diag-options">
+            <button class="diag-option" data-diag="printer">
+              <span class="diag-option-icon">🖨️</span>
+              <span data-i18n="diagPrinter">Printer not working</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <button class="diag-option" data-diag="internet">
+              <span class="diag-option-icon">🌐</span>
+              <span data-i18n="diagInternet">No Internet</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <button class="diag-option" data-diag="slow">
+              <span class="diag-option-icon">🐌</span>
+              <span data-i18n="diagSlow">Computer is slow</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <button class="diag-option" data-diag="email">
+              <span class="diag-option-icon">📧</span>
+              <span data-i18n="diagEmail">Email problems</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <button class="diag-option" data-diag="login">
+              <span class="diag-option-icon">🔐</span>
+              <span data-i18n="diagLogin">Login failed</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diArchitecture">Architecture</span>
-            <span class="info-value" id="di-arch">—</span>
+        </div>
+
+        <!-- Step 2: Running Diagnostics -->
+        <div class="diag-step" id="diag-step-2">
+          <div class="diag-heading">
+            <h2 data-i18n="diagRunning">Running Diagnostics</h2>
+            <p data-i18n="diagChecking">Checking your system…</p>
           </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diCpu">CPU</span>
-            <span class="info-value" id="di-cpu">—</span>
+          <div class="diag-checks">
+            <div class="diag-check check-success">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span data-i18n="diagConnCheck">Connection check</span>
+            </div>
+            <div class="diag-check check-warning">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span data-i18n="diagQueueCheck">Queue check</span>
+            </div>
+            <div class="diag-check check-running">
+              <svg class="spin-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span data-i18n="diagDriverCheck">Driver status…</span>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diRam">RAM (Total / Free)</span>
-            <span class="info-value" id="di-ram">—</span>
+          <button class="btn-submit-new btn-purple" id="diag-next-2" data-i18n="continue">Continue</button>
+        </div>
+
+        <!-- Step 3: Result -->
+        <div class="diag-step" id="diag-step-3">
+          <div class="diag-heading">
+            <h2 data-i18n="diagProblemFound">Problem found!</h2>
+            <p data-i18n="diagIssueId">Issue identified</p>
           </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diDisk">Disk (Total / Free)</span>
-            <span class="info-value" id="di-disk">—</span>
+
+          <div class="diag-alert diag-alert-warning">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div>
+              <strong data-i18n="diagIssueDetected">Issue detected</strong>
+              <p id="diag-issue-text">There are 12 print jobs in the queue blocking the printer.</p>
+            </div>
           </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diUptime">Uptime</span>
-            <span class="info-value" id="di-uptime">—</span>
+
+          <div class="diag-solution-box">
+            <p class="section-label-sm" data-i18n="diagRecommended">Recommended solution:</p>
+            <p class="diag-solution-text" id="diag-solution-text">Clear queue and restart printer</p>
           </div>
+
+          <button class="btn-submit-new btn-gradient" id="diag-autofix">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span data-i18n="diagAutoFix">Auto-fix</span>
+          </button>
+          <button class="btn-ghost" id="diag-talk-support" data-i18n="diagTalkSupport">Talk to support instead</button>
+        </div>
+
+        <!-- Step 4: Success -->
+        <div class="diag-step" id="diag-step-4">
+          <div class="diag-heading">
+            <h2 data-i18n="diagFixed">Problem fixed! ✓</h2>
+            <p data-i18n="diagAllGood">Everything should work now</p>
+          </div>
+
+          <div class="diag-success-circle">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+
+          <p class="diag-success-msg" id="diag-success-msg">The print queue has been cleared. Your printer should be working again.</p>
+
+          <button class="btn-submit-new" id="diag-done" data-i18n="done">Done</button>
+          <button class="btn-ghost" id="diag-still-broken" data-i18n="diagStillBroken">Problem persists</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         VIEW: SETTINGS  —  Device Info & Privacy
+         ════════════════════════════════════════════════════════ -->
+    <div id="view-settings" class="view">
+      <header class="header">
+        <button class="btn-back" id="settings-back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="back">Back</span>
+        </button>
+        <button class="btn-icon" id="settings-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="header-center">
+        <h1 class="header-title" data-i18n="settingsTitle">Settings</h1>
+      </div>
+
+      <div class="settings-scroll">
+        <!-- Connection Status -->
+        <div class="settings-status" id="settings-status">
+          <div class="settings-status-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          </div>
+          <div>
+            <p class="settings-status-text" data-i18n="connected">Connected</p>
+            <p class="settings-status-sub" data-i18n="allSystemsOp">All systems operational</p>
+          </div>
+        </div>
+
+        <!-- Device Info Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title" data-i18n="deviceInfo">Device Information</h3>
+          <div class="settings-card">
+            <div class="settings-row"><span data-i18n="setComputer">Computer Name</span><span class="mono" id="set-computer">—</span></div>
+            <div class="settings-row"><span data-i18n="setUser">Logged-in User</span><span class="mono" id="set-user">—</span></div>
+            <div class="settings-row"><span>Ninja ID</span><span class="mono" id="set-ninja">—</span></div>
+            <div class="settings-row"><span>TeamViewer</span><span class="mono" id="set-tv">—</span></div>
+            <div class="settings-row"><span data-i18n="setOS">Operating System</span><span id="set-os">—</span></div>
+            <div class="settings-row"><span data-i18n="setIP">IP Address</span><span class="mono" id="set-ip">—</span></div>
+          </div>
+        </div>
+
+        <!-- Privacy Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title" data-i18n="privacy">Privacy</h3>
+          <div class="settings-card">
+            <div class="settings-toggle-row">
+              <span data-i18n="shareDevice">Share device context</span>
+              <div class="toggle active" data-toggle="share-device"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+              <span data-i18n="sendErrors">Send error reports</span>
+              <div class="toggle active" data-toggle="error-reports"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+              <span data-i18n="autoScreenshots">Auto screenshots</span>
+              <div class="toggle" data-toggle="auto-screenshots"><div class="toggle-knob"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title" data-i18n="notifications">Notifications</h3>
+          <div class="settings-card">
+            <div class="settings-toggle-row">
+              <span data-i18n="showTips">Show tips & hints</span>
+              <div class="toggle active" data-toggle="tips"><div class="toggle-knob"></div></div>
+            </div>
+            <div class="settings-toggle-row">
+              <span data-i18n="ticketUpdates">Ticket updates</span>
+              <div class="toggle active" data-toggle="ticket-updates"><div class="toggle-knob"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Support Contact -->
+        <div class="settings-contact">
+          <p class="section-label-sm" data-i18n="supportContact">Support Contact</p>
+          <p class="settings-contact-name">ATLAS IT-Support</p>
+          <p class="settings-contact-email">support@alphora.com</p>
         </div>
       </div>
 
-      <!-- Network Section -->
-      <div class="info-section">
-        <h3 class="info-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-            <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-            <line x1="12" y1="20" x2="12.01" y2="20"/>
-          </svg>
-          <span data-i18n="sectionNetwork">Network</span>
-        </h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label" data-i18n="diIpAddress">IP Address</span>
-            <span class="info-value" id="di-ip">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diMacAddress">MAC Address</span>
-            <span class="info-value" id="di-mac">—</span>
-          </div>
-        </div>
+      <!-- Footer -->
+      <div class="settings-footer">
+        <p>ATLAS Support Widget v1.0.0</p>
       </div>
-
-      <!-- Remote Support Section -->
-      <div class="info-section">
-        <h3 class="info-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10 17 15 12 10 7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
-          </svg>
-          <span data-i18n="sectionRemoteSupport">Remote Support</span>
-        </h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label" data-i18n="diNinjaDeviceId">NinjaOne Device ID</span>
-            <span class="info-value" id="di-ninja">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diTeamviewerId">TeamViewer ID</span>
-            <span class="info-value" id="di-tvid">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label" data-i18n="diTeamviewerVersion">TeamViewer Version</span>
-            <span class="info-value" id="di-tvver">—</span>
-          </div>
-        </div>
-      </div>
-    </main>
+    </div>
 
     <!-- ── Error Toast ── -->
     <div class="toast toast-error" id="toast-error" style="display:none;">
       <span class="toast-icon">⚠️</span>
-      <span class="toast-message" id="toast-message" data-i18n="toastDefault">Something went wrong</span>
+      <span class="toast-message" id="toast-message">Something went wrong</span>
     </div>
 
-    <!-- ── Status Bar ── -->
-    <footer class="statusbar">
-      <div class="status-indicator">
-        <span class="status-dot" id="status-dot"></span>
-        <span class="status-text" id="status-text" data-i18n="statusChecking">Checking…</span>
-      </div>
-      <span class="status-device" id="status-device">—</span>
-    </footer>
   </div>
 
   <script type="module" src="./main.ts"></script>

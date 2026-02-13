@@ -20,7 +20,7 @@ import { collectDeviceContext } from './device-context';
 import { detectLocale, getTranslations } from './i18n';
 
 const WIDGET_WIDTH = 420;
-const WIDGET_HEIGHT = 520;
+const WIDGET_HEIGHT = 580;
 
 let tray: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;

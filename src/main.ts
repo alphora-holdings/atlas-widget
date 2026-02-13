@@ -19,6 +19,7 @@ declare global {
             getDeviceContext: () => Promise<DeviceContext>;
             submitTicket: (data: Record<string, unknown>) => Promise<SubmitResult>;
             getTickets: (email: string) => Promise<GetTicketsResult>;
+            resolveEmail: (ninjaDeviceId: number) => Promise<ResolveEmailResult>;
             getConfig: () => Promise<{ apiBaseUrl: string }>;
             getLocale: () => Promise<string>;
             hideWindow: () => void;
@@ -83,6 +84,12 @@ interface GetTicketsResult {
     error?: string;
 }
 
+interface ResolveEmailResult {
+    success: boolean;
+    email?: string | null;
+    error?: string;
+}
+
 // ── Sub-categories ─────────────────────────────────────────
 
 function getSubCategories(tr: Translations): Record<string, string[]> {
@@ -120,7 +127,7 @@ function getUserEmail(): string {
 async function updateTicketCountBadge() {
     const email = getUserEmail();
     const badge = $('ticket-count-badge');
-    if (!email) {
+    if (!email || !email.includes('@')) {
         badge.style.display = 'none';
         return;
     }
@@ -137,6 +144,31 @@ async function updateTicketCountBadge() {
         }
     } catch {
         badge.style.display = 'none';
+    }
+}
+
+/**
+ * Resolve the user's email from NinjaOne when domain is unavailable (macOS).
+ * Calls the backend to look up which system user owns this device,
+ * then updates the user-email DOM element and refreshes the ticket badge.
+ */
+async function resolveUserEmail(ninjaDeviceId: number) {
+    try {
+        const result = await window.atlasAPI.resolveEmail(ninjaDeviceId);
+        if (result.success && result.email) {
+            $('user-email').textContent = result.email;
+            // Update main view email display
+            const mainEmail = $('main-user-email');
+            if (mainEmail) {
+                mainEmail.textContent = `✉ ${result.email}`;
+            }
+            // Update settings view email
+            $('set-email').textContent = result.email;
+            // Re-fetch ticket count now that we have a valid email
+            updateTicketCountBadge();
+        }
+    } catch (err) {
+        console.warn('Failed to resolve email from NinjaOne:', err);
     }
 }
 
@@ -178,6 +210,11 @@ async function init() {
         updateMainStatus('offline', '—');
     }
 
+    // Resolve email from NinjaOne if domain is not available (macOS)
+    if (deviceContext && !deviceContext.domain && deviceContext.ninjaDeviceId) {
+        resolveUserEmail(deviceContext.ninjaDeviceId);
+    }
+
     // Check API connectivity
     checkApiConnection();
 
@@ -217,9 +254,22 @@ function populateAll(ctx: DeviceContext) {
         ? ctx.loggedInUser.replace(/\./g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
         : '—';
     $('user-name').textContent = fullName;
-    $('user-email').textContent = ctx.domain
-        ? `${ctx.loggedInUser}@${ctx.domain}`
-        : ctx.loggedInUser || '—';
+
+    // Set email: if domain is available, construct it locally.
+    // Otherwise, set placeholder — resolveUserEmail() will update it from NinjaOne.
+    if (ctx.domain) {
+        $('user-email').textContent = `${ctx.loggedInUser}@${ctx.domain}`;
+    } else {
+        $('user-email').textContent = ctx.loggedInUser || '—';
+    }
+
+    // Main view — show email under welcome
+    const mainEmail = $('main-user-email');
+    if (mainEmail) {
+        mainEmail.textContent = getUserEmail().includes('@')
+            ? `✉ ${getUserEmail()}`
+            : '';
+    }
 
     // Email form — device compact
     $('email-device').textContent = ctx.computerName;
@@ -230,6 +280,7 @@ function populateAll(ctx: DeviceContext) {
     // Settings view
     $('set-computer').textContent = ctx.computerName;
     $('set-user').textContent = ctx.loggedInUser;
+    $('set-email').textContent = getUserEmail().includes('@') ? getUserEmail() : '—';
     $('set-ninja').textContent = ctx.ninjaDeviceId ? String(ctx.ninjaDeviceId) : '—';
     $('set-tv').textContent = ctx.teamviewerId || '—';
     $('set-os').textContent = ctx.osVersion;
@@ -521,7 +572,7 @@ async function renderTicketsList() {
     const footer = $('tickets-footer');
 
     const email = getUserEmail();
-    if (!email) {
+    if (!email || !email.includes('@')) {
         emptyState.style.display = 'flex';
         listScroll.style.display = 'none';
         footer.style.display = 'none';

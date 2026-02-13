@@ -139,7 +139,7 @@ ipcMain.handle('get-device-context', () => {
 
 ipcMain.handle('get-config', () => {
     return {
-        apiBaseUrl: process.env.ATLAS_API_URL || 'https://staging.alphoraholdings.com/api' || 'http://localhost:3000/api',
+        apiBaseUrl: process.env.ATLAS_API_URL || 'http://localhost:3000/api',
     };
 });
 
@@ -150,7 +150,7 @@ ipcMain.handle('get-locale', () => {
 ipcMain.handle('submit-ticket', async (_event, ticketData) => {
     try {
         const config = {
-            apiBaseUrl: process.env.ATLAS_API_URL || 'https://staging.alphoraholdings.com/api' || 'http://localhost:3000/api',
+            apiBaseUrl: process.env.ATLAS_API_URL || 'http://localhost:3000/api',
         };
         const response = await fetch(`${config.apiBaseUrl}/rmm/widget/tickets`, {
             method: 'POST',
@@ -171,21 +171,41 @@ ipcMain.handle('submit-ticket', async (_event, ticketData) => {
 ipcMain.handle('get-tickets', async (_event, email: string) => {
     try {
         const config = {
-            apiBaseUrl: process.env.ATLAS_API_URL || 'https://staging.alphoraholdings.com/api' || 'http://localhost:3000/api',
+            apiBaseUrl: process.env.ATLAS_API_URL || 'http://localhost:3000/api',
         };
-        const response = await fetch(
-            `${config.apiBaseUrl}/rmm/widget/tickets?email=${encodeURIComponent(email)}`,
-            {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                signal: AbortSignal.timeout(10000),
-            },
-        );
+        const url = `${config.apiBaseUrl}/rmm/widget/tickets?email=${encodeURIComponent(email)}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(10000),
+        });
         const data = await response.json();
         if (response.ok) {
             return { success: true, data };
         }
         return { success: false, error: data.message || 'Failed to fetch tickets' };
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        return { success: false, error: message };
+    }
+});
+
+ipcMain.handle('resolve-email', async (_event, ninjaDeviceId: number) => {
+    try {
+        const config = {
+            apiBaseUrl: process.env.ATLAS_API_URL || 'http://localhost:3000/api',
+        };
+        const url = `${config.apiBaseUrl}/rmm/widget/user-email?ninjaDeviceId=${ninjaDeviceId}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(10000),
+        });
+        const data = await response.json();
+        if (response.ok) {
+            return { success: true, email: data.email };
+        }
+        return { success: false, error: data.message || 'Failed to resolve email' };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         return { success: false, error: message };

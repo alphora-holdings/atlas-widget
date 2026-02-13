@@ -48,6 +48,17 @@ contextBridge.exposeInMainWorld('atlasAPI', {
     hideWindow: () => ipcRenderer.send('hide-window'),
 
     /**
+     * Load persisted settings from disk.
+     */
+    getSettings: () => ipcRenderer.invoke('get-settings'),
+
+    /**
+     * Save partial settings update to disk.
+     */
+    saveSettings: (partial: Record<string, boolean>) =>
+        ipcRenderer.invoke('save-settings', partial),
+
+    /**
      * Listen for events from the main process.
      */
     onMessage: (callback: (event: string, data: unknown) => void) => {

@@ -18,6 +18,7 @@ import {
 import path from 'path';
 import { collectDeviceContext } from './device-context';
 import { detectLocale, getTranslations } from './i18n';
+import { loadSettings, saveSettings, type WidgetSettings } from './settings-store';
 
 const WIDGET_WIDTH = 420;
 const WIDGET_HEIGHT = 580;
@@ -145,6 +146,14 @@ ipcMain.handle('get-config', () => {
 
 ipcMain.handle('get-locale', () => {
     return app.getLocale();
+});
+
+ipcMain.handle('get-settings', () => {
+    return loadSettings();
+});
+
+ipcMain.handle('save-settings', (_event, partial: Partial<WidgetSettings>) => {
+    return saveSettings(partial);
 });
 
 ipcMain.handle('submit-ticket', async (_event, ticketData) => {

@@ -22,6 +22,8 @@ declare global {
             resolveEmail: (ninjaDeviceId: number) => Promise<ResolveEmailResult>;
             getConfig: () => Promise<{ apiBaseUrl: string }>;
             getLocale: () => Promise<string>;
+            getSettings: () => Promise<WidgetSettings>;
+            saveSettings: (partial: Partial<WidgetSettings>) => Promise<WidgetSettings>;
             hideWindow: () => void;
             onMessage: (cb: (event: string, data: unknown) => void) => void;
         };
@@ -89,6 +91,24 @@ interface ResolveEmailResult {
     email?: string | null;
     error?: string;
 }
+
+interface WidgetSettings {
+    shareDeviceContext: boolean;
+    sendErrorReports: boolean;
+    autoScreenshots: boolean;
+    showTips: boolean;
+    ticketUpdates: boolean;
+}
+
+// ── Settings Toggle ↔ Key Mapping ──────────────────────────
+
+const TOGGLE_KEY_MAP: Record<string, keyof WidgetSettings> = {
+    'share-device': 'shareDeviceContext',
+    'error-reports': 'sendErrorReports',
+    'auto-screenshots': 'autoScreenshots',
+    'tips': 'showTips',
+    'ticket-updates': 'ticketUpdates',
+};
 
 // ── Sub-categories ─────────────────────────────────────────
 
@@ -223,6 +243,9 @@ async function init() {
 
     // Wire up all event listeners
     wireEvents();
+
+    // Load and apply persisted settings to toggles
+    await loadAndApplySettings();
 }
 
 // ── Populate device info across views ──────────────────────
@@ -285,6 +308,37 @@ function populateAll(ctx: DeviceContext) {
     $('set-tv').textContent = ctx.teamviewerId || '—';
     $('set-os').textContent = ctx.osVersion;
     $('set-ip').textContent = ctx.ipAddress;
+}
+
+// ── Load & Apply Settings ──────────────────────────────────
+
+/**
+ * Load persisted settings from disk and sync toggle UI states.
+ * Called once during init, after wireEvents() so toggles exist.
+ */
+async function loadAndApplySettings() {
+    try {
+        const settings = await window.atlasAPI.getSettings();
+        // Build reverse map: settingKey → data-toggle attribute value
+        const reverseMap: Record<string, string> = {};
+        for (const [toggleAttr, settingKey] of Object.entries(TOGGLE_KEY_MAP)) {
+            reverseMap[settingKey] = toggleAttr;
+        }
+        // Apply each setting to its corresponding toggle
+        for (const [key, value] of Object.entries(settings)) {
+            const toggleAttr = reverseMap[key];
+            if (!toggleAttr) continue;
+            const toggle = document.querySelector<HTMLElement>(`.toggle[data-toggle="${toggleAttr}"]`);
+            if (!toggle) continue;
+            if (value) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+    } catch (err) {
+        console.warn('Failed to load settings:', err);
+    }
 }
 
 function updateMainStatus(state: 'connected' | 'offline', device: string) {
@@ -433,10 +487,21 @@ function wireEvents() {
     // ─── Diagnose wizard ───
     wireDiagnoseWizard();
 
-    // ─── Settings toggles ───
-    document.querySelectorAll<HTMLElement>('.toggle').forEach((toggle) => {
-        toggle.addEventListener('click', () => {
+    // ─── Settings toggles (persist to disk) ───
+    document.querySelectorAll<HTMLElement>('.settings-toggle-row').forEach((row) => {
+        row.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const toggle = row.querySelector<HTMLElement>('.toggle');
+            if (!toggle) return;
             toggle.classList.toggle('active');
+
+            // Persist the new state
+            const toggleKey = toggle.dataset.toggle;
+            if (toggleKey && TOGGLE_KEY_MAP[toggleKey]) {
+                const settingKey = TOGGLE_KEY_MAP[toggleKey];
+                const isActive = toggle.classList.contains('active');
+                window.atlasAPI.saveSettings({ [settingKey]: isActive });
+            }
         });
     });
 }
@@ -580,7 +645,7 @@ async function renderTicketsList() {
     }
 
     // Show loading state
-    listScroll.style.display = 'block';
+    listScroll.style.display = '';
     emptyState.style.display = 'none';
     footer.style.display = 'none';
     listContainer.innerHTML = `

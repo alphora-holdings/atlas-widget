@@ -17,6 +17,7 @@ import {
 } from 'electron';
 import path from 'path';
 import { collectDeviceContext } from './device-context';
+import { detectLocale, getTranslations } from './i18n';
 
 const WIDGET_WIDTH = 420;
 const WIDGET_HEIGHT = 520;
@@ -51,6 +52,8 @@ app.on('window-all-closed', () => {
 
 // ── Tray ───────────────────────────────────────────────────
 function createTray() {
+    const t = getTranslations(detectLocale(app.getLocale()));
+
     // Try to load icon from assets, fall back to a generated one
     const iconPath = path.join(__dirname, '..', 'assets', 'tray-icon.png');
     let icon: Electron.NativeImage;
@@ -69,13 +72,13 @@ function createTray() {
     }
 
     tray = new Tray(icon);
-    tray.setToolTip('ATLAS Support — Click for help');
+    tray.setToolTip(t.trayTooltip);
 
     tray.setContextMenu(
         Menu.buildFromTemplate([
-            { label: '📧  Open ATLAS Support', click: () => showWindow() },
+            { label: t.trayOpen, click: () => showWindow() },
             { type: 'separator' },
-            { label: '❌  Exit', click: () => app.exit(0) },
+            { label: t.trayExit, click: () => app.exit(0) },
         ]),
     );
 }
@@ -138,6 +141,10 @@ ipcMain.handle('get-config', () => {
     return {
         apiBaseUrl: process.env.ATLAS_API_URL || 'https://staging.alphoraholdings.com/api' || 'http://localhost:3000/api',
     };
+});
+
+ipcMain.handle('get-locale', () => {
+    return app.getLocale();
 });
 
 ipcMain.handle('submit-ticket', async (_event, ticketData) => {
